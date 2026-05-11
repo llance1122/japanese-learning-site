@@ -28,8 +28,8 @@
       <nav class="main-nav" id="main-nav">
         <button class="nav-btn active" data-page="home">首頁</button>
         <button class="nav-btn" data-page="kana">五十音</button>
-        <button class="nav-btn" data-page="vocab">N5 單字</button>
-        <button class="nav-btn" data-page="grammar">N5 文法</button>
+        <button class="nav-btn" data-page="vocab">單字</button>
+        <button class="nav-btn" data-page="grammar">文法</button>
         <button class="nav-btn" data-page="review">複習</button>
         <button class="nav-btn" data-page="quiz">測驗</button>
       </nav>
@@ -64,8 +64,8 @@
     <section class="page" id="page-home">
       <div class="hero">
         <h2>初めまして！</h2>
-        <p class="hero-sub">歡迎來到日文初學者學習網站</p>
-        <p class="hero-desc">從零開始，一步步學會 五十音 → N5 單字 → N5 文法，再透過測驗檢驗成果。</p>
+        <p class="hero-sub">歡迎來到日文學習網站</p>
+        <p class="hero-desc">從零開始，逐步學會 五十音 → N5 → N4，再透過測驗與複習鞏固成果。</p>
         <div class="home-stats" id="home-stats"></div>
       </div>
       <div class="card-grid">
@@ -75,13 +75,13 @@
           <div class="card-cta">開始學習 →</div>
         </div>
         <div class="card" data-goto="vocab">
-          <h3>N5 單字</h3>
-          <p>分類整理 800 個基礎詞彙<br>含漢字、假名、中文意思</p>
+          <h3>單字 <span class="card-badge">N5 · N4</span></h3>
+          <p>分類整理超過 1700 個詞彙<br>含漢字、假名、中文意思</p>
           <div class="card-cta">瀏覽單字 →</div>
         </div>
         <div class="card" data-goto="grammar">
-          <h3>N5 文法</h3>
-          <p>50+ 條基礎文法<br>說明 + 例句一目了然</p>
+          <h3>文法 <span class="card-badge">N5 · N4</span></h3>
+          <p>120+ 條核心文法<br>說明＋例句一目了然</p>
           <div class="card-cta">學習文法 →</div>
         </div>
         <div class="card" data-goto="quiz">
@@ -112,8 +112,13 @@
 
     <!-- VOCAB -->
     <section class="page hidden" id="page-vocab">
-      <h2 class="page-title">N5 單字</h2>
+      <h2 class="page-title">單字</h2>
       <div class="vocab-controls">
+        <select id="vocab-level-select" class="level-select" aria-label="等級">
+          <option value="N5" selected>N5</option>
+          <option value="N4">N4</option>
+          <option value="all">N5 + N4</option>
+        </select>
         <input type="search" id="vocab-search" placeholder="搜尋單字（漢字、假名、羅馬拼音、中文）...">
         <select id="vocab-category">
           <option value="all">全部分類</option>
@@ -125,7 +130,15 @@
 
     <!-- GRAMMAR -->
     <section class="page hidden" id="page-grammar">
-      <h2 class="page-title">N5 文法</h2>
+      <h2 class="page-title">文法</h2>
+      <div class="grammar-controls">
+        <select id="grammar-level-select" class="level-select" aria-label="等級">
+          <option value="N5" selected>N5</option>
+          <option value="N4">N4</option>
+          <option value="all">N5 + N4</option>
+        </select>
+      </div>
+      <div class="grammar-stats" id="grammar-stats"></div>
       <div class="grammar-list" id="grammar-list"></div>
     </section>
 
@@ -203,6 +216,13 @@
           <button class="quiz-type" data-type="grammar">文法選擇</button>
         </div>
         <div class="quiz-config">
+          <label>等級：
+            <select id="quiz-level">
+              <option value="N5" selected>N5</option>
+              <option value="N4">N4</option>
+              <option value="all">N5 + N4</option>
+            </select>
+          </label>
           <label>題數：
             <select id="quiz-count">
               <option value="10">10 題</option>

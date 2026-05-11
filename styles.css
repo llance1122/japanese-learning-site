@@ -294,6 +294,49 @@ html[data-theme="dark"] .theme-toggle .thumb {
 .no-romaji .kana-romaji { visibility: hidden; }
 .kana-hint { color: var(--text-soft); font-size: 13px; text-align: center; margin-top: 16px; }
 
+/* === Level select dropdown === */
+.level-select {
+  padding: 10px 32px 10px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--accent-dark);
+  font-family: inherit;
+  cursor: pointer;
+  min-width: 110px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23d64545' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px;
+}
+.level-select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.grammar-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.grammar-stats {
+  color: var(--text-soft);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.card-badge {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: 600;
+}
+
 /* === Vocab === */
 .vocab-controls {
   display: flex;
@@ -858,7 +901,27 @@ html[data-theme="dark"] .srs-lv-0 { background: #444; }
   .kana-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 6px; }
   .kana-char { font-size: 22px; }
   .quiz-question .q-content { font-size: 28px; }
-  .vocab-controls { gap: 8px; }
+
+  /* 單字篩選列：兩排網格（搜尋框獨佔上排、等級+分類下排各半） */
+  .vocab-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  #vocab-search {
+    grid-column: 1 / -1;
+    min-width: 0;
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+  .level-select,
+  #vocab-category {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 28px 9px 12px;
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 380px) {

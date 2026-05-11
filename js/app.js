@@ -6,6 +6,8 @@
   const state = {
     currentPage: 'home',
     currentKanaTab: 'hira-basic',
+    vocabLevel: 'N5',
+    grammarLevel: 'N5',
     showRomaji: true,
     theme: 'light',
     quiz: null
@@ -302,13 +304,25 @@
   // ---- 單字渲染 ----
   function renderVocabCategories() {
     const sel = $('vocab-category');
-    const cats = getCategories();
+    const prev = sel.value;
+    // 只列出當前等級內存在的分類
+    const set = new Set();
+    for (const v of VOCAB_DATA) {
+      if (state.vocabLevel === 'all' || v.level === state.vocabLevel) set.add(v.cat);
+    }
+    const cats = [...set];
     sel.innerHTML = '<option value="all">全部分類</option>';
     for (const c of cats) {
       const opt = document.createElement('option');
       opt.value = c;
       opt.textContent = c;
       sel.appendChild(opt);
+    }
+    // 嘗試保留之前的選擇
+    if (prev && [...sel.options].some(o => o.value === prev)) {
+      sel.value = prev;
+    } else {
+      sel.value = 'all';
     }
   }
 
@@ -317,8 +331,10 @@
     const stats = $('vocab-stats');
     const q = $('vocab-search').value.trim().toLowerCase();
     const cat = $('vocab-category').value;
+    const lvl = state.vocabLevel;
 
     const filtered = VOCAB_DATA.filter(v => {
+      if (lvl !== 'all' && v.level !== lvl) return false;
       if (cat !== 'all' && v.cat !== cat) return false;
       if (!q) return true;
       return (
@@ -329,7 +345,10 @@
       );
     });
 
-    stats.textContent = `共 ${filtered.length} 個單字（總計 ${VOCAB_DATA.length} 個）`;
+    const totalForLevel = lvl === 'all'
+      ? VOCAB_DATA.length
+      : VOCAB_DATA.filter(v => v.level === lvl).length;
+    stats.textContent = `共 ${filtered.length} 個（${lvl === 'all' ? 'N5 + N4' : lvl} 總計 ${totalForLevel} 個）`;
     list.innerHTML = '';
 
     if (filtered.length === 0) {
@@ -375,8 +394,17 @@
   // ---- 文法渲染 ----
   function renderGrammar() {
     const list = $('grammar-list');
+    const stats = $('grammar-stats');
+    const lvl = state.grammarLevel;
+    const filtered = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
+    if (stats) {
+      const totalForLevel = lvl === 'all'
+        ? GRAMMAR_DATA.length
+        : GRAMMAR_DATA.filter(g => g.level === lvl).length;
+      stats.textContent = `共 ${filtered.length} 條（${lvl === 'all' ? 'N5 + N4' : lvl}）`;
+    }
     list.innerHTML = '';
-    GRAMMAR_DATA.forEach((g, idx) => {
+    filtered.forEach((g, idx) => {
       const key = 'g:' + g.pattern;
       const fav = isFavorite(key);
       const item = document.createElement('div');
@@ -509,6 +537,7 @@
   // ---- 測驗 ----
   function startQuiz(type) {
     const count = parseInt($('quiz-count').value, 10);
+    const lvl = $('quiz-level') ? $('quiz-level').value : 'all';
     let pool;
 
     if (type === 'hira-to-romaji' || type === 'romaji-to-hira') {
@@ -516,10 +545,15 @@
     } else if (type === 'kata-to-romaji' || type === 'romaji-to-kata') {
       pool = getAllKatakana();
     } else if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp') {
-      pool = VOCAB_DATA.slice();
+      pool = VOCAB_DATA.filter(v => lvl === 'all' || v.level === lvl);
     } else if (type === 'grammar') {
-      pool = GRAMMAR_DATA.slice();
+      pool = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
     } else {
+      return;
+    }
+
+    if (pool.length === 0) {
+      alert('此等級沒有可出題的內容');
       return;
     }
 
@@ -753,6 +787,19 @@
     // 單字 search / category
     $('vocab-search').addEventListener('input', renderVocabList);
     $('vocab-category').addEventListener('change', renderVocabList);
+
+    // 等級下拉（單字）
+    $('vocab-level-select').addEventListener('change', e => {
+      state.vocabLevel = e.target.value;
+      renderVocabCategories();
+      renderVocabList();
+    });
+
+    // 等級下拉（文法）
+    $('grammar-level-select').addEventListener('change', e => {
+      state.grammarLevel = e.target.value;
+      renderGrammar();
+    });
 
     // 測驗類型
     $$('.quiz-type').forEach(b => {
