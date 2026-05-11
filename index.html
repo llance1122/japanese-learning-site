@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本語スタート - 日文初學者學習網站</title>
+  <script>
+    // 在 CSS 套用前就決定主題，避免閃白
+    (function() {
+      try {
+        var saved = localStorage.getItem('jp-learn-theme');
+        var theme = (saved === 'dark' || saved === 'light')
+          ? saved
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 class="logo">日本語<span>スタート</span></h1>
+      <nav class="main-nav" id="main-nav">
+        <button class="nav-btn active" data-page="home">首頁</button>
+        <button class="nav-btn" data-page="kana">五十音</button>
+        <button class="nav-btn" data-page="vocab">N5 單字</button>
+        <button class="nav-btn" data-page="grammar">N5 文法</button>
+        <button class="nav-btn" data-page="review">複習</button>
+        <button class="nav-btn" data-page="quiz">測驗</button>
+      </nav>
+      <label class="romaji-toggle">
+        <input type="checkbox" id="romaji-toggle" checked>
+        <span class="toggle-label">羅馬拼音</span>
+      </label>
+      <button class="theme-toggle" id="theme-toggle" aria-label="切換深色／淺色模式" title="切換深色／淺色模式">
+        <svg class="theme-icon icon-sun" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+          <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="12" y1="2"  x2="12" y2="5"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="2"  y1="12" x2="5"  y2="12"/>
+            <line x1="19" y1="12" x2="22" y2="12"/>
+            <line x1="4.9"  y1="4.9"  x2="7"    y2="7"/>
+            <line x1="17"   y1="17"   x2="19.1" y2="19.1"/>
+            <line x1="4.9"  y1="19.1" x2="7"    y2="17"/>
+            <line x1="17"   y1="7"    x2="19.1" y2="4.9"/>
+          </g>
+        </svg>
+        <svg class="theme-icon icon-moon" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" fill="currentColor"/>
+        </svg>
+        <span class="thumb" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- HOME -->
+    <section class="page" id="page-home">
+      <div class="hero">
+        <h2>初めまして！</h2>
+        <p class="hero-sub">歡迎來到日文初學者學習網站</p>
+        <p class="hero-desc">從零開始，一步步學會 五十音 → N5 單字 → N5 文法，再透過測驗檢驗成果。</p>
+        <div class="home-stats" id="home-stats"></div>
+      </div>
+      <div class="card-grid">
+        <div class="card" data-goto="kana">
+          <h3>五十音</h3>
+          <p>平假名 + 片假名 + 濁音 + 拗音<br>共 200+ 字</p>
+          <div class="card-cta">開始學習 →</div>
+        </div>
+        <div class="card" data-goto="vocab">
+          <h3>N5 單字</h3>
+          <p>分類整理 800 個基礎詞彙<br>含漢字、假名、中文意思</p>
+          <div class="card-cta">瀏覽單字 →</div>
+        </div>
+        <div class="card" data-goto="grammar">
+          <h3>N5 文法</h3>
+          <p>50+ 條基礎文法<br>說明 + 例句一目了然</p>
+          <div class="card-cta">學習文法 →</div>
+        </div>
+        <div class="card" data-goto="quiz">
+          <h3>測驗</h3>
+          <p>五十音 / 單字 / 文法<br>四選一隨機出題</p>
+          <div class="card-cta">挑戰測驗 →</div>
+        </div>
+      </div>
+      <div class="tip">
+        <strong>小提示：</strong>右上角的「羅馬拼音」開關可以隨時開啟/關閉羅馬拼音顯示，建議學了一陣子之後試著關掉，自我檢驗。
+      </div>
+    </section>
+
+    <!-- KANA -->
+    <section class="page hidden" id="page-kana">
+      <h2 class="page-title">五十音</h2>
+      <div class="tab-bar" id="kana-tabs">
+        <button class="tab active" data-kana="hira-basic">平假名 清音</button>
+        <button class="tab" data-kana="hira-dakuten">平假名 濁音/半濁音</button>
+        <button class="tab" data-kana="hira-yoon">平假名 拗音</button>
+        <button class="tab" data-kana="kata-basic">片假名 清音</button>
+        <button class="tab" data-kana="kata-dakuten">片假名 濁音/半濁音</button>
+        <button class="tab" data-kana="kata-yoon">片假名 拗音</button>
+      </div>
+      <div class="kana-grid" id="kana-grid"></div>
+      <p class="kana-hint">點擊任一字可以聽發音（使用瀏覽器內建語音）</p>
+    </section>
+
+    <!-- VOCAB -->
+    <section class="page hidden" id="page-vocab">
+      <h2 class="page-title">N5 單字</h2>
+      <div class="vocab-controls">
+        <input type="search" id="vocab-search" placeholder="搜尋單字（漢字、假名、羅馬拼音、中文）...">
+        <select id="vocab-category">
+          <option value="all">全部分類</option>
+        </select>
+      </div>
+      <div class="vocab-stats" id="vocab-stats"></div>
+      <div class="vocab-list" id="vocab-list"></div>
+    </section>
+
+    <!-- GRAMMAR -->
+    <section class="page hidden" id="page-grammar">
+      <h2 class="page-title">N5 文法</h2>
+      <div class="grammar-list" id="grammar-list"></div>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="page hidden" id="page-review">
+      <h2 class="page-title">複習</h2>
+
+      <div class="review-card daily-card">
+        <div class="daily-top">
+          <div class="streak">
+            <span class="streak-icon">🔥</span>
+            <span class="streak-num" id="streak-num">0</span>
+            <span class="streak-label">連續天</span>
+          </div>
+          <div class="daily-goal">
+            <div class="daily-goal-text">
+              今日：<span id="today-total">0</span> 題
+              ／ 正確 <span id="today-correct">0</span> 題
+              （<span id="today-rate">—</span>）
+            </div>
+            <div class="daily-progress-bar"><div class="daily-progress-fill" id="daily-progress-fill"></div></div>
+            <div class="daily-goal-sub">每日目標 <span id="daily-goal">20</span> 題</div>
+          </div>
+        </div>
+        <div class="srs-summary" id="srs-summary"></div>
+      </div>
+
+      <div class="review-sections">
+        <div class="review-card">
+          <div class="review-card-head">
+            <h3>📚 到期複習</h3>
+            <span class="review-count" id="due-count">0</span>
+          </div>
+          <p class="review-desc">根據遺忘曲線排程：答對後 1 天、3 天、7 天…依次出現複習。</p>
+          <div class="review-breakdown" id="due-breakdown"></div>
+          <button class="review-btn" id="btn-review-due" disabled>開始複習</button>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card-head">
+            <h3>❌ 錯題本</h3>
+            <span class="review-count" id="mistake-count">0</span>
+          </div>
+          <p class="review-desc">最近答錯的題目自動收進這裡，最多保留 100 題。</p>
+          <div class="review-actions">
+            <button class="review-btn" id="btn-review-mistakes" disabled>練習錯題</button>
+            <button class="review-btn ghost" id="btn-clear-mistakes" disabled>清空</button>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card-head">
+            <h3>⭐ 收藏</h3>
+            <span class="review-count" id="favorite-count">0</span>
+          </div>
+          <p class="review-desc">在單字／文法頁面點星號圖示，把想重點記的項目收進來。</p>
+          <button class="review-btn" id="btn-review-favorites" disabled>練習收藏</button>
+          <div class="favorite-preview" id="favorite-preview"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="page hidden" id="page-quiz">
+      <h2 class="page-title">測驗</h2>
+      <div class="quiz-setup" id="quiz-setup">
+        <h3>選擇測驗類型</h3>
+        <div class="quiz-types">
+          <button class="quiz-type" data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
+          <button class="quiz-type" data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
+          <button class="quiz-type" data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
+          <button class="quiz-type" data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
+          <button class="quiz-type" data-type="vocab-jp-to-cn">單字 日 → 中</button>
+          <button class="quiz-type" data-type="vocab-cn-to-jp">單字 中 → 日</button>
+          <button class="quiz-type" data-type="grammar">文法選擇</button>
+        </div>
+        <div class="quiz-config">
+          <label>題數：
+            <select id="quiz-count">
+              <option value="10">10 題</option>
+              <option value="20" selected>20 題</option>
+              <option value="30">30 題</option>
+              <option value="50">50 題</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="quiz-active hidden" id="quiz-active">
+        <div class="quiz-progress">
+          <span id="quiz-progress-text"></span>
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+        </div>
+        <div class="quiz-question" id="quiz-question"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback hidden" id="quiz-feedback"></div>
+        <button class="quiz-next hidden" id="quiz-next">下一題 →</button>
+        <button class="quiz-quit" id="quiz-quit">結束測驗</button>
+      </div>
+
+      <div class="quiz-result hidden" id="quiz-result">
+        <h3>測驗結果</h3>
+        <div class="quiz-score" id="quiz-score"></div>
+        <div class="quiz-review" id="quiz-review"></div>
+        <button class="quiz-restart" id="quiz-restart">再測一次</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>日本語スタート · 日文初學者學習網站 · 加油！頑張って！</p>
+  </footer>
+
+  <script src="js/kana.js"></script>
+  <script src="js/vocab.js"></script>
+  <script src="js/grammar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
