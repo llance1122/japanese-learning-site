@@ -1262,6 +1262,28 @@
     // 主題切換
     $('theme-toggle').addEventListener('click', toggleTheme);
 
+    // 回頂端按鈕：捲動超過 300px 顯示，點擊平滑回頂
+    const backBtn = $('back-to-top');
+    if (backBtn) {
+      const SHOW_THRESHOLD = 300;
+      let ticking = false;
+      const updateBackBtn = () => {
+        backBtn.classList.toggle('visible', window.scrollY > SHOW_THRESHOLD);
+        ticking = false;
+      };
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(updateBackBtn);
+          ticking = true;
+        }
+      }, { passive: true });
+      // 初始檢查一次（例如刷新時頁面已在底部）
+      updateBackBtn();
+      backBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
     // 五十音分頁
     $$('#kana-tabs .tab').forEach(t => {
       t.addEventListener('click', () => renderKana(t.dataset.kana));
