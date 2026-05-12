@@ -3088,17 +3088,10 @@ const VOCAB_DATA = [
   { jp:'板につく', kana:'いたにつく', romaji:'ita ni tsuku', cn:'適合、得心應手', cat:'慣用句', level:'N1' },
   { jp:'裏目に出る', kana:'うらめにでる', romaji:'urame ni deru', cn:'適得其反', cat:'慣用句', level:'N1' },
   { jp:'駄目を押す', kana:'だめをおす', romaji:'dame wo osu', cn:'再三叮嚀', cat:'慣用句', level:'N1' },
-  { jp:'一段落', kana:'いちだんらく', romaji:'ichidanraku', cn:'告一段落', cat:'慣用句', level:'N1' }
-];
+  { jp:'一段落', kana:'いちだんらく', romaji:'ichidanraku', cn:'告一段落', cat:'慣用句', level:'N1' },
 
-// 取得分類列表
-function getCategories() {
-  const set = new Set();
-  for (const v of VOCAB_DATA) set.add(v.cat);
-  return [...set,
-
+  // ==== 後續 sessions 補充（從錯置位置救回）====
   // ==== N3 Session 1 補充 ====,
-
   { jp:'焦点', kana:'しょうてん', romaji:'shouten', cn:'焦點', cat:'抽象', level:'N3' },
   { jp:'視点', kana:'してん', romaji:'shiten', cn:'視角', cat:'抽象', level:'N3' },
   { jp:'妥協', kana:'だきょう', romaji:'dakyou', cn:'妥協', cat:'抽象', level:'N3' },
@@ -3426,9 +3419,7 @@ function getCategories() {
   { jp:'招待', kana:'しょうたい', romaji:'shoutai', cn:'招待', cat:'其他', level:'N3' },
   { jp:'歓迎', kana:'かんげい', romaji:'kangei', cn:'歡迎', cat:'其他', level:'N3' },
   { jp:'送別', kana:'そうべつ', romaji:'soubetsu', cn:'送別', cat:'其他', level:'N3' },
-
   // ==== N2 Session 1 補充 ====,
-
   { jp:'観念論', kana:'かんねんろん', romaji:'kannenron', cn:'觀念論', cat:'抽象', level:'N2' },
   { jp:'構想', kana:'こうそう', romaji:'kousou', cn:'構想', cat:'抽象', level:'N2' },
   { jp:'発祥', kana:'はっしょう', romaji:'hasshou', cn:'發祥', cat:'抽象', level:'N2' },
@@ -3721,9 +3712,7 @@ function getCategories() {
   { jp:'資質', kana:'ししつ', romaji:'shishitsu', cn:'資質', cat:'其他', level:'N2' },
   { jp:'品性', kana:'ひんせい', romaji:'hinsei', cn:'品性', cat:'其他', level:'N2' },
   { jp:'素行', kana:'そこう', romaji:'sokou', cn:'素行、品行', cat:'其他', level:'N2' },
-
   // ==== N1 Session 1 補充 ====,
-
   { jp:'憂慮', kana:'ゆうりょ', romaji:'yuuryo', cn:'憂慮', cat:'抽象', level:'N1' },
   { jp:'憂愁', kana:'ゆうしゅう', romaji:'yuushuu', cn:'憂愁', cat:'抽象', level:'N1' },
   { jp:'郷愁', kana:'きょうしゅう', romaji:'kyoushuu', cn:'鄉愁', cat:'抽象', level:'N1' },
@@ -4027,9 +4016,7 @@ function getCategories() {
   { jp:'我田引水', kana:'がでんいんすい', romaji:'gaden insui', cn:'各取所需、自私', cat:'慣用句', level:'N1' },
   { jp:'公明正大', kana:'こうめいせいだい', romaji:'koumei seidai', cn:'光明正大', cat:'慣用句', level:'N1' },
   { jp:'信賞必罰', kana:'しんしょうひつばつ', romaji:'shinshou hitsubatsu', cn:'信賞必罰', cat:'慣用句', level:'N1' },
-  { jp:'明鏡止水', kana:'めいきょうしすい', romaji:'meikyou shisui', cn:'明鏡止水', cat:'慣用句', level:'N1' }
-,
-
+  { jp:'明鏡止水', kana:'めいきょうしすい', romaji:'meikyou shisui', cn:'明鏡止水', cat:'慣用句', level:'N1' },
   // ==== N3 Session 2 補充 ====
   { jp:'導く', kana:'みちびく', romaji:'michibiku', cn:'引導、導出', cat:'動詞', level:'N3' },
   { jp:'送り出す', kana:'おくりだす', romaji:'okuridasu', cn:'送出、送走', cat:'動詞', level:'N3' },
@@ -4274,7 +4261,6 @@ function getCategories() {
   { jp:'文化祭', kana:'ぶんかさい', romaji:'bunkasai', cn:'校慶、文化節', cat:'教育', level:'N3' },
   { jp:'運動会', kana:'うんどうかい', romaji:'undoukai', cn:'運動會', cat:'教育', level:'N3' },
   { jp:'体育祭', kana:'たいいくさい', romaji:'taiikusai', cn:'體育祭', cat:'教育', level:'N3' },
-
   // ==== N2 Session 2 補充 ====
   { jp:'押し並べて', kana:'おしなべて', romaji:'oshinabete', cn:'總體來說', cat:'動詞', level:'N2' },
   { jp:'打ち合わせる', kana:'うちあわせる', romaji:'uchiawaseru', cn:'事先商討', cat:'動詞', level:'N2' },
@@ -4561,7 +4547,6 @@ function getCategories() {
   { jp:'立ち会い', kana:'たちあい', romaji:'tachiai', cn:'在場、見證', cat:'其他', level:'N2' },
   { jp:'立証', kana:'りっしょう', romaji:'risshou', cn:'立證、舉證', cat:'其他', level:'N2' },
   { jp:'証拠物', kana:'しょうこぶつ', romaji:'shoukobutsu', cn:'證物', cat:'其他', level:'N2' },
-
   // ==== N1 Session 2 補充 ====
   { jp:'静謐', kana:'せいひつ', romaji:'seihitsu', cn:'靜謐', cat:'抽象', level:'N1' },
   { jp:'閑寂', kana:'かんじゃく', romaji:'kanjaku', cn:'閒寂', cat:'抽象', level:'N1' },
@@ -4880,9 +4865,7 @@ function getCategories() {
   { jp:'弘法も筆の誤り', kana:'こうぼうもふでのあやまり', romaji:'kouboumo fude no ayamari', cn:'再厲害也會犯錯', cat:'慣用句', level:'N1' },
   { jp:'猿も木から落ちる', kana:'さるもきからおちる', romaji:'saru mo ki kara ochiru', cn:'人有失足', cat:'慣用句', level:'N1' },
   { jp:'弱り目に祟り目', kana:'よわりめにたたりめ', romaji:'yowarime ni tatarime', cn:'禍不單行', cat:'慣用句', level:'N1' },
-  { jp:'泣きっ面に蜂', kana:'なきっつらにはち', romaji:'nakittsura ni hachi', cn:'屋漏偏逢連夜雨', cat:'慣用句', level:'N1' }
-,
-
+  { jp:'泣きっ面に蜂', kana:'なきっつらにはち', romaji:'nakittsura ni hachi', cn:'屋漏偏逢連夜雨', cat:'慣用句', level:'N1' },
   // ==== N3 Session 3 補充 ====
   { jp:'天体', kana:'てんたい', romaji:'tentai', cn:'天體', cat:'環境', level:'N3' },
   { jp:'流星', kana:'りゅうせい', romaji:'ryuusei', cn:'流星', cat:'環境', level:'N3' },
@@ -5105,7 +5088,6 @@ function getCategories() {
   { jp:'体育館', kana:'たいいくかん', romaji:'taiikukan', cn:'體育館', cat:'教育', level:'N3' },
   { jp:'実験室', kana:'じっけんしつ', romaji:'jikkenshitsu', cn:'實驗室', cat:'教育', level:'N3' },
   { jp:'コンピューター室', kana:'こんぴゅーたーしつ', romaji:'konpyuutaa shitsu', cn:'電腦教室', cat:'教育', level:'N3' },
-
   // ==== N2 Session 3 補充 ====
   { jp:'文体', kana:'ぶんたい', romaji:'buntai', cn:'文體', cat:'學術', level:'N2' },
   { jp:'文芸', kana:'ぶんげい', romaji:'bungei', cn:'文藝', cat:'學術', level:'N2' },
@@ -5359,7 +5341,6 @@ function getCategories() {
   { jp:'一生懸命', kana:'いっしょうけんめい', romaji:'isshou kenmei', cn:'拚命努力', cat:'形容詞', level:'N2' },
   { jp:'熱中', kana:'ねっちゅう', romaji:'necchuu', cn:'熱衷', cat:'形容詞', level:'N2' },
   { jp:'はまる', kana:'はまる', romaji:'hamaru', cn:'迷上', cat:'形容詞', level:'N2' },
-
   // ==== N1 Session 3 補充 ====
   { jp:'いにしえ', kana:'いにしえ', romaji:'inishie', cn:'古代、往昔', cat:'抽象', level:'N1' },
   { jp:'古', kana:'いにしえ', romaji:'inishie', cn:'古昔', cat:'抽象', level:'N1' },
@@ -5658,9 +5639,7 @@ function getCategories() {
   { jp:'桃栗三年柿八年', kana:'ももくりさんねんかきはちねん', romaji:'momokuri sannen kaki hachinen', cn:'凡事都要時間', cat:'慣用句', level:'N1' },
   { jp:'論より証拠', kana:'ろんよりしょうこ', romaji:'ron yori shouko', cn:'事實勝於雄辯', cat:'慣用句', level:'N1' },
   { jp:'百聞は一見にしかず', kana:'ひゃくぶんはいっけんにしかず', romaji:'hyakubun wa ikken ni shikazu', cn:'百聞不如一見', cat:'慣用句', level:'N1' },
-  { jp:'聞くは一時の恥', kana:'きくはいっときのはじ', romaji:'kiku wa ittoki no haji', cn:'問是一時羞、不問是終身羞', cat:'慣用句', level:'N1' }
-,
-
+  { jp:'聞くは一時の恥', kana:'きくはいっときのはじ', romaji:'kiku wa ittoki no haji', cn:'問是一時羞、不問是終身羞', cat:'慣用句', level:'N1' },
   // ==== N2 Session 4 補充 ====
   { jp:'契約条項', kana:'けいやくじょうこう', romaji:'keiyaku joukou', cn:'契約條款', cat:'商業', level:'N2' },
   { jp:'条項', kana:'じょうこう', romaji:'joukou', cn:'條項', cat:'商業', level:'N2' },
@@ -5964,7 +5943,6 @@ function getCategories() {
   { jp:'強いて言えば', kana:'しいていえば', romaji:'shiite ieba', cn:'勉強要說的話', cat:'副詞', level:'N2' },
   { jp:'言わば', kana:'いわば', romaji:'iwaba', cn:'可說是、好比', cat:'副詞', level:'N2' },
   { jp:'いわゆる', kana:'いわゆる', romaji:'iwayuru', cn:'所謂的（N2）', cat:'副詞', level:'N2' },
-
   // ==== N1 Session 4 補充 ====
   { jp:'戦術家', kana:'せんじゅつか', romaji:'senjutsuka', cn:'戰術家', cat:'政治法律', level:'N1' },
   { jp:'軍師', kana:'ぐんし', romaji:'gunshi', cn:'軍師', cat:'政治法律', level:'N1' },
@@ -6349,9 +6327,7 @@ function getCategories() {
   { jp:'根回し', kana:'ねまわし', romaji:'nemawashi', cn:'事前打點', cat:'抽象', level:'N1' },
   { jp:'下準備', kana:'したじゅんび', romaji:'shita junbi', cn:'事前準備', cat:'抽象', level:'N1' },
   { jp:'下調べ', kana:'したしらべ', romaji:'shitashirabe', cn:'事前查證', cat:'抽象', level:'N1' },
-  { jp:'伏線回収', kana:'ふくせんかいしゅう', romaji:'fukusen kaishuu', cn:'回收伏筆', cat:'抽象', level:'N1' }
-,
-
+  { jp:'伏線回収', kana:'ふくせんかいしゅう', romaji:'fukusen kaishuu', cn:'回收伏筆', cat:'抽象', level:'N1' },
   // ==== N3 Session 5 補充 ====
   { jp:'電話番号', kana:'でんわばんごう', romaji:'denwa bangou', cn:'電話號碼', cat:'通訊', level:'N3' },
   { jp:'内線', kana:'ないせん', romaji:'naisen', cn:'分機', cat:'通訊', level:'N3' },
@@ -6507,7 +6483,6 @@ function getCategories() {
   { jp:'シンプル', kana:'しんぷる', romaji:'shinpuru', cn:'簡單', cat:'形容詞', level:'N3' },
   { jp:'カジュアル', kana:'かじゅある', romaji:'kajuaru', cn:'休閒風', cat:'形容詞', level:'N3' },
   { jp:'フォーマル', kana:'ふぉーまる', romaji:'foomaru', cn:'正式', cat:'形容詞', level:'N3' },
-
   // ==== N2 Session 5 補充 ====
   { jp:'政界', kana:'せいかい', romaji:'seikai', cn:'政界', cat:'社會', level:'N2' },
   { jp:'国会議員', kana:'こっかいぎいん', romaji:'kokkai giin', cn:'國會議員', cat:'社會', level:'N2' },
@@ -6702,7 +6677,6 @@ function getCategories() {
   { jp:'おあいこ', kana:'おあいこ', romaji:'oaiko', cn:'扯平', cat:'慣用句', level:'N2' },
   { jp:'お手の物', kana:'おてのもの', romaji:'ote no mono', cn:'拿手', cat:'慣用句', level:'N2' },
   { jp:'お茶の子', kana:'おちゃのこ', romaji:'ocha no ko', cn:'輕而易舉', cat:'慣用句', level:'N2' },
-
   // ==== N1 Session 5 補充 ====
   { jp:'外交関係', kana:'がいこうかんけい', romaji:'gaikou kankei', cn:'外交關係', cat:'政治法律', level:'N1' },
   { jp:'国交断絶', kana:'こっこうだんぜつ', romaji:'kokkou danzetsu', cn:'斷交', cat:'政治法律', level:'N1' },
@@ -7123,4 +7097,10 @@ function getCategories() {
   { jp:'同舟共済', kana:'どうしゅうきょうさい', romaji:'doushuu kyousai', cn:'同舟共濟', cat:'慣用句', level:'N1' },
   { jp:'運命の悪戯', kana:'うんめいのいたずら', romaji:'unmei no itazura', cn:'命運捉弄', cat:'慣用句', level:'N1' }
 ];
+
+// 取得分類列表
+function getCategories() {
+  const set = new Set();
+  for (const v of VOCAB_DATA) set.add(v.cat);
+  return [...set];
 }
