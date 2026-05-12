@@ -106,7 +106,8 @@
         type === 'kata-to-romaji' || type === 'romaji-to-kata') {
       return 'k:' + target.kana;
     }
-    if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp') {
+    if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp' ||
+        type === 'vocab-kanji-to-kana') {
       return 'v:' + target.jp + '|' + target.cn;
     }
     if (type === 'grammar') {
@@ -348,7 +349,7 @@
     const totalForLevel = lvl === 'all'
       ? VOCAB_DATA.length
       : VOCAB_DATA.filter(v => v.level === lvl).length;
-    stats.textContent = `共 ${filtered.length} 個（${lvl === 'all' ? 'N5 + N4' : lvl} 總計 ${totalForLevel} 個）`;
+    stats.textContent = `共 ${filtered.length} 個（${lvl === 'all' ? '全部' : lvl} 總計 ${totalForLevel} 個）`;
     list.innerHTML = '';
 
     if (filtered.length === 0) {
@@ -401,7 +402,7 @@
       const totalForLevel = lvl === 'all'
         ? GRAMMAR_DATA.length
         : GRAMMAR_DATA.filter(g => g.level === lvl).length;
-      stats.textContent = `共 ${filtered.length} 條（${lvl === 'all' ? 'N5 + N4' : lvl}）`;
+      stats.textContent = `共 ${filtered.length} 條（${lvl === 'all' ? '全部' : lvl}）`;
     }
     list.innerHTML = '';
     filtered.forEach((g, idx) => {
@@ -546,8 +547,17 @@
       pool = getAllKatakana();
     } else if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp') {
       pool = VOCAB_DATA.filter(v => lvl === 'all' || v.level === lvl);
+    } else if (type === 'vocab-kanji-to-kana') {
+      // 只挑含漢字、且 jp ≠ kana 的詞
+      pool = VOCAB_DATA.filter(v =>
+        (lvl === 'all' || v.level === lvl) &&
+        v.jp !== v.kana &&
+        /[一-鿿]/.test(v.jp)
+      );
     } else if (type === 'grammar') {
       pool = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
+    } else if (type === 'jlpt-mock') {
+      return startMockExam(lvl, count);
     } else {
       return;
     }
@@ -607,6 +617,45 @@
     return questions;
   }
 
+  // JLPT 模擬試卷：混合多個題型，按 JLPT 大題分配
+  function startMockExam(level, totalCount) {
+    const vocabPool = VOCAB_DATA.filter(v => level === 'all' || v.level === level);
+    const kanjiPool = vocabPool.filter(v => v.jp !== v.kana && /[一-鿿]/.test(v.jp));
+    const grammarPool = GRAMMAR_DATA.filter(g => level === 'all' || g.level === level);
+
+    if (vocabPool.length === 0 || grammarPool.length === 0) {
+      alert('此等級的題目資料不足');
+      return;
+    }
+
+    // 分配比例：漢字読み 30%、文字・語彙(jp→cn) 25%、語彙(cn→jp) 20%、文法 25%
+    const sections = [
+      { type: 'vocab-kanji-to-kana', pool: kanjiPool,  ratio: 0.30, label: '漢字読み' },
+      { type: 'vocab-jp-to-cn',      pool: vocabPool,  ratio: 0.25, label: '文字・語彙' },
+      { type: 'vocab-cn-to-jp',      pool: vocabPool,  ratio: 0.20, label: '語彙置き換え' },
+      { type: 'grammar',             pool: grammarPool, ratio: 0.25, label: '文法' }
+    ];
+
+    const questions = [];
+    for (const sec of sections) {
+      if (!sec.pool.length) continue;
+      const n = Math.max(1, Math.round(totalCount * sec.ratio));
+      const targets = randomPick(sec.pool, Math.min(n, sec.pool.length));
+      for (const t of targets) {
+        const q = buildQuestion(sec.type, t, sec.pool);
+        q.section = sec.label;
+        questions.push(q);
+      }
+    }
+    // 打亂題目順序，避免按 section 排序
+    const shuffled = shuffle(questions).slice(0, totalCount);
+    if (!shuffled.length) {
+      alert('產題失敗');
+      return;
+    }
+    launchQuiz('jlpt-mock', shuffled);
+  }
+
   function startReviewSession(mode) {
     let keys;
     if (mode === 'due') keys = getDueKeys();
@@ -643,6 +692,15 @@
       const distractors = randomPick(pool.filter(p => p.jp !== target.jp), 3)
         .map(p => `${p.jp}（${p.kana}）`);
       options = shuffle([correct, ...distractors]);
+    } else if (type === 'vocab-kanji-to-kana') {
+      // JLPT 漢字読み題型：給漢字選正確讀音
+      question = { prompt: '請選出正確的讀法（文字・語彙）', content: target.jp, small: false };
+      correct = target.kana;
+      const distractors = randomPick(
+        pool.filter(p => p.kana !== correct && /[一-鿿]/.test(p.jp)),
+        3
+      ).map(p => p.kana);
+      options = shuffle([correct, ...distractors]);
     } else if (type === 'grammar') {
       question = { prompt: '這個文法的意思是？', content: target.pattern, small: true };
       correct = target.short;
@@ -662,7 +720,10 @@
       `${(q.currentIdx / q.questions.length) * 100}%`;
 
     const qBox = $('quiz-question');
+    const sectionTag = cur.section
+      ? `<div class="q-section">［${cur.section}］</div>` : '';
     qBox.innerHTML = `
+      ${sectionTag}
       <div class="q-prompt">${cur.question.prompt}</div>
       <div class="q-content${cur.question.small ? ' small' : ''}">${cur.question.content}</div>
     `;

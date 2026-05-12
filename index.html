@@ -65,7 +65,7 @@
       <div class="hero">
         <h2>初めまして！</h2>
         <p class="hero-sub">歡迎來到日文學習網站</p>
-        <p class="hero-desc">從零開始，逐步學會 五十音 → N5 → N4，再透過測驗與複習鞏固成果。</p>
+        <p class="hero-desc">從零開始，一路學到 N1：五十音 → N5 → N4 → N3 → N2 → N1，搭配測驗與複習鞏固成果。</p>
         <div class="home-stats" id="home-stats"></div>
       </div>
       <div class="card-grid">
@@ -75,13 +75,13 @@
           <div class="card-cta">開始學習 →</div>
         </div>
         <div class="card" data-goto="vocab">
-          <h3>單字 <span class="card-badge">N5 · N4</span></h3>
-          <p>分類整理超過 1700 個詞彙<br>含漢字、假名、中文意思</p>
+          <h3>單字 <span class="card-badge">N5 – N1</span></h3>
+          <p>超過 3000 個詞彙，分等級分類<br>含漢字、假名、中文意思</p>
           <div class="card-cta">瀏覽單字 →</div>
         </div>
         <div class="card" data-goto="grammar">
-          <h3>文法 <span class="card-badge">N5 · N4</span></h3>
-          <p>120+ 條核心文法<br>說明＋例句一目了然</p>
+          <h3>文法 <span class="card-badge">N5 – N1</span></h3>
+          <p>370+ 條 N5–N1 文法<br>說明＋例句一目了然</p>
           <div class="card-cta">學習文法 →</div>
         </div>
         <div class="card" data-goto="quiz">
@@ -117,7 +117,10 @@
         <select id="vocab-level-select" class="level-select" aria-label="等級">
           <option value="N5" selected>N5</option>
           <option value="N4">N4</option>
-          <option value="all">N5 + N4</option>
+          <option value="N3">N3</option>
+          <option value="N2">N2</option>
+          <option value="N1">N1</option>
+          <option value="all">全部（N5–N1）</option>
         </select>
         <input type="search" id="vocab-search" placeholder="搜尋單字（漢字、假名、羅馬拼音、中文）...">
         <select id="vocab-category">
@@ -135,7 +138,10 @@
         <select id="grammar-level-select" class="level-select" aria-label="等級">
           <option value="N5" selected>N5</option>
           <option value="N4">N4</option>
-          <option value="all">N5 + N4</option>
+          <option value="N3">N3</option>
+          <option value="N2">N2</option>
+          <option value="N1">N1</option>
+          <option value="all">全部（N5–N1）</option>
         </select>
       </div>
       <div class="grammar-stats" id="grammar-stats"></div>
@@ -205,15 +211,34 @@
     <section class="page hidden" id="page-quiz">
       <h2 class="page-title">測驗</h2>
       <div class="quiz-setup" id="quiz-setup">
-        <h3>選擇測驗類型</h3>
-        <div class="quiz-types">
-          <button class="quiz-type" data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
-          <button class="quiz-type" data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
-          <button class="quiz-type" data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
-          <button class="quiz-type" data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
-          <button class="quiz-type" data-type="vocab-jp-to-cn">單字 日 → 中</button>
-          <button class="quiz-type" data-type="vocab-cn-to-jp">單字 中 → 日</button>
-          <button class="quiz-type" data-type="grammar">文法選擇</button>
+        <button class="quiz-type quiz-type-mock" data-type="jlpt-mock">
+          📝 JLPT 模擬試卷
+          <span class="quiz-type-desc">綜合題型，按 JLPT 比例自動產卷</span>
+        </button>
+
+        <h3>分題型練習</h3>
+        <div class="quiz-section-group">
+          <div class="quiz-section-label">五十音</div>
+          <div class="quiz-types">
+            <button class="quiz-type" data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
+            <button class="quiz-type" data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
+            <button class="quiz-type" data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
+            <button class="quiz-type" data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
+          </div>
+        </div>
+        <div class="quiz-section-group">
+          <div class="quiz-section-label">文字・語彙（單字）</div>
+          <div class="quiz-types">
+            <button class="quiz-type" data-type="vocab-kanji-to-kana">漢字読み（漢字→讀音）</button>
+            <button class="quiz-type" data-type="vocab-jp-to-cn">單字 日 → 中</button>
+            <button class="quiz-type" data-type="vocab-cn-to-jp">語彙置き換え 中 → 日</button>
+          </div>
+        </div>
+        <div class="quiz-section-group">
+          <div class="quiz-section-label">文法</div>
+          <div class="quiz-types">
+            <button class="quiz-type" data-type="grammar">文法選擇</button>
+          </div>
         </div>
         <div class="quiz-config">
           <label>等級：
