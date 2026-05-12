@@ -568,9 +568,20 @@ html[data-theme="dark"] .theme-toggle .thumb {
   padding: 16px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+}
+.quiz-config label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 .quiz-config select {
-  margin-left: 8px;
+  margin-left: 0;
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -902,6 +913,659 @@ html[data-theme="dark"] .srs-lv-0 { background: #444; }
 
 .grammar-head .fav-btn { font-size: 18px; }
 
+/* === Auth header area === */
+.auth-area, .user-menu {
+  display: flex;
+  align-items: center;
+}
+.auth-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.auth-btn:hover { background: var(--accent-dark); }
+
+.user-menu { position: relative; }
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.user-menu-btn:hover { border-color: var(--accent); }
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+.user-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-caret { font-size: 10px; color: var(--text-soft); }
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  min-width: 220px;
+  padding: 12px;
+  z-index: 200;
+}
+.user-dropdown hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+.user-dropdown-email {
+  font-size: 13px;
+  color: var(--text-soft);
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+.user-dropdown-sync {
+  font-size: 12px;
+  color: var(--good);
+}
+.user-dropdown-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+.user-dropdown-item:hover { background: var(--bg-soft); color: var(--accent); }
+
+/* === Auth modal === */
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+.auth-modal-card {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 28px 28px 24px;
+  width: 92%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+.auth-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+.auth-modal-close:hover { background: var(--bg-soft); color: var(--text); }
+
+.auth-modal-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.auth-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* 註冊後「驗證信已寄出」橫幅 */
+.auth-info-banner {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 14px 36px 14px 14px;
+  margin-bottom: 18px;
+  color: var(--accent-dark);
+}
+.auth-info-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.auth-info-body { flex: 1; font-size: 13px; line-height: 1.6; }
+.auth-info-body strong { font-size: 14px; display: block; margin-bottom: 4px; }
+.auth-info-body p { margin: 0; }
+.auth-info-body b { color: var(--accent); word-break: break-all; }
+.auth-info-hint {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin-top: 4px !important;
+}
+.auth-info-resend {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  font-family: inherit;
+}
+.auth-info-resend:hover:not(:disabled) {
+  background: var(--accent);
+  color: white;
+}
+.auth-info-resend:disabled { opacity: 0.6; cursor: wait; }
+.auth-info-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-soft);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+.auth-info-close:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.auth-field > span {
+  font-size: 13px;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.auth-field input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+}
+.auth-field input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.auth-hint { font-size: 11px; color: var(--text-soft); }
+
+.auth-error {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border: 1px solid var(--bad-border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.auth-error.auth-success {
+  background: var(--good-bg);
+  color: var(--good);
+  border-color: var(--good-border);
+}
+
+.auth-submit {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 11px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.auth-submit:hover:not(:disabled) { background: var(--accent-dark); }
+.auth-submit:disabled { opacity: 0.6; cursor: wait; }
+
+/* === 個人設定 Modal === */
+.profile-card {
+  max-width: 480px;
+}
+.profile-title {
+  font-size: 20px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.profile-section {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--border);
+}
+.profile-section:last-of-type { border-bottom: none; }
+.profile-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.profile-row {
+  display: flex;
+  gap: 8px;
+}
+.profile-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  min-width: 0;
+}
+.profile-row input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.profile-save-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.profile-save-btn:hover { background: var(--accent-dark); }
+.profile-hint {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.profile-msg {
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.profile-msg-success {
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid var(--good-border);
+}
+.profile-msg-error {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border: 1px solid var(--bad-border);
+}
+
+.profile-danger {
+  background: var(--bad-bg);
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--bad-border);
+  margin-top: 18px;
+}
+.profile-danger h3 { color: var(--bad); }
+.profile-delete-btn {
+  background: var(--bad);
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.profile-delete-btn:hover { opacity: 0.9; }
+
+.auth-hint-text {
+  font-size: 12px;
+  color: var(--text-soft);
+  text-align: center;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+/* mobile: user name 隱藏，按鈕變更緊湊 */
+@media (max-width: 720px) {
+  .user-name { display: none; }
+  .user-menu-btn { padding: 4px; }
+  .auth-btn { padding: 6px 12px; font-size: 13px; }
+}
+
+/* 超窄螢幕（< 380px）進一步縮小 */
+@media (max-width: 380px) {
+  .header-inner { column-gap: 6px; padding: 10px 10px; }
+  .logo { font-size: 15px; }
+  .romaji-toggle .toggle-label { display: none; }
+  .auth-btn { padding: 5px 10px; font-size: 12px; }
+  .theme-toggle { width: 48px; height: 24px; }
+  .theme-toggle .thumb { width: 18px; height: 18px; top: 3px; }
+  html[data-theme="light"] .theme-toggle .thumb { transform: translateX(24px); }
+}
+
+/* === D plan: Level estimate / Daily recommend / Upgrade banner === */
+.upgrade-banner {
+  background: linear-gradient(135deg, #fff7e0 0%, #ffe9c2 100%);
+  border: 1px solid #f3d28a;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+html[data-theme="dark"] .upgrade-banner {
+  background: linear-gradient(135deg, #3a2e16 0%, #4a3a1a 100%);
+  border-color: #6a5320;
+  color: #ffe2a1;
+}
+.upgrade-text { font-size: 14px; line-height: 1.6; flex: 1; min-width: 220px; }
+.upgrade-text b { color: var(--accent); }
+html[data-theme="dark"] .upgrade-text b { color: #ffce6a; }
+.upgrade-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.upgrade-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+.upgrade-btn.primary { background: var(--accent); color: white; }
+.upgrade-btn.primary:hover { background: var(--accent-dark); }
+.upgrade-btn.ghost {
+  background: transparent;
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+}
+.upgrade-btn.ghost:hover { background: var(--bg-soft); color: var(--text); }
+
+/* 能力估算卡 */
+.level-estimate-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.level-estimate-head h3 { font-size: 17px; color: var(--accent-dark); }
+.level-estimate-badge {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  color: white;
+  background: var(--accent);
+}
+.level-estimate-badge.level-N5 { background: #6cc28d; }
+.level-estimate-badge.level-N4 { background: #4aa8c9; }
+.level-estimate-badge.level-N3 { background: #7a6fd4; }
+.level-estimate-badge.level-N2 { background: #d68a3a; }
+.level-estimate-badge.level-N1 { background: #c0392b; }
+.level-estimate-msg {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+.level-estimate-msg b { color: var(--accent-dark); }
+.level-estimate-empty {
+  font-size: 13px;
+  color: var(--text-soft);
+  padding: 4px 0;
+}
+.level-estimate-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.lv-row { font-size: 12px; }
+.lv-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.lv-tag {
+  font-weight: 700;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+.lv-tag-N5 { background: #6cc28d; }
+.lv-tag-N4 { background: #4aa8c9; }
+.lv-tag-N3 { background: #7a6fd4; }
+.lv-tag-N2 { background: #d68a3a; }
+.lv-tag-N1 { background: #c0392b; }
+.lv-row-detail {
+  flex: 1;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.lv-row-score {
+  font-weight: 700;
+  color: var(--accent-dark);
+  font-size: 13px;
+  min-width: 32px;
+  text-align: right;
+}
+.lv-row-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.lv-row-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ff8a3d);
+  width: 0;
+  transition: width 0.4s;
+}
+.lv-row-fill.pending { background: var(--border); }
+
+/* 今日推薦卡 */
+.daily-recommend-card { }
+.daily-recommend-focus {
+  font-size: 12px;
+  color: var(--text-soft);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.daily-recommend-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 8px;
+}
+.rec-chip {
+  flex: 1;
+  min-width: 110px;
+  background: var(--bg-soft, var(--accent-soft));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-align: center;
+}
+.rec-chip b {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  margin-bottom: 2px;
+}
+.rec-due    b { color: #4aa8c9; }
+.rec-new    b { color: #6cc28d; }
+.rec-mistake b { color: var(--bad); }
+.daily-recommend-hint {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+/* 使用者下拉的實力顯示 */
+.user-dropdown-est {
+  font-size: 12px;
+  color: var(--text-soft);
+  padding: 6px 14px;
+  line-height: 1.5;
+}
+.user-dropdown-est b { color: var(--accent-dark); font-weight: 700; }
+
+/* mobile */
+@media (max-width: 720px) {
+  .upgrade-banner { flex-direction: column; align-items: stretch; }
+  .upgrade-actions { justify-content: flex-end; }
+  .rec-chip { min-width: 0; }
+  .level-estimate-head h3 { font-size: 16px; }
+  .lv-row-detail { font-size: 11px; }
+
+  /* 測驗頁等級／題數：堆疊 + 撐滿 */
+  .quiz-config {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .quiz-config label {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  .quiz-config select {
+    width: 100%;
+    padding: 8px 10px;
+  }
+}
+
+/* 超窄螢幕（< 380px）：能力估算 detail 簡化避免擠版 */
+@media (max-width: 380px) {
+  .lv-row-detail { font-size: 11px; line-height: 1.35; }
+  .lv-row-score { font-size: 12px; min-width: 26px; }
+  .lv-tag { font-size: 10px; padding: 2px 6px; }
+  .level-estimate-badge { font-size: 12px; padding: 4px 10px; }
+}
+
+/* === Toast 通知 === */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid var(--good-border);
+  border-radius: 10px;
+  padding: 12px 16px 12px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-width: 90vw;
+  min-width: 280px;
+  animation: toast-in 0.25s ease-out;
+}
+.toast.toast-info {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  border-color: var(--accent);
+}
+.toast.toast-error {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border-color: var(--bad-border);
+}
+.toast-icon { font-size: 18px; line-height: 1; }
+.toast-msg { flex: 1; }
+.toast-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.7;
+}
+.toast-close:hover { opacity: 1; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 720px) {
+  .toast { top: auto; bottom: 20px; min-width: 0; width: calc(100% - 32px); }
+}
+
 /* === Footer === */
 .site-footer {
   text-align: center;
@@ -916,17 +1580,18 @@ html[data-theme="dark"] .srs-lv-0 { background: #444; }
 @media (max-width: 720px) {
   .header-inner {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     grid-template-areas:
-      "logo  romaji theme"
-      "nav   nav    nav";
+      "logo  romaji auth theme"
+      "nav   nav    nav  nav";
     align-items: center;
-    column-gap: 12px;
+    column-gap: 10px;
     row-gap: 8px;
     padding: 10px 14px;
   }
   .logo { grid-area: logo; font-size: 17px; }
   .romaji-toggle { grid-area: romaji; font-size: 13px; }
+  .auth-area, .user-menu { grid-area: auth; justify-self: end; }
   .theme-toggle { grid-area: theme; }
 
   .main-nav {
@@ -976,7 +1641,3 @@ html[data-theme="dark"] .srs-lv-0 { background: #444; }
   }
 }
 
-@media (max-width: 380px) {
-  .romaji-toggle .toggle-label { display: none; }
-  .header-inner { column-gap: 8px; }
-}
