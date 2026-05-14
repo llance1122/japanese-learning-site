@@ -30,7 +30,7 @@
 
 - **網站**：https://jp-learn-001.azurewebsites.net/
 - **GitHub**：https://github.com/llance1122/japanese-learning-site
-- **部署平台**：Azure App Service（Linux F1 免費方案 / japaneast）
+- **部署平台**：Azure App Service（windows F1 免費方案 / japaneast）
 - **後端**：Supabase（Postgres + Auth + RLS）
   - Project URL：`https://kbifeqmxjofifdgwonus.supabase.co`
   - Publishable Key（前端用，受 RLS 保護）：`sb_publishable_XLI46b47-XY84e3Mj1W1Ow_NZImZdU3`
