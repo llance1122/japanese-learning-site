@@ -59,6 +59,7 @@
       srs: {},          // { itemKey: { level, due, lastSeen, correct, wrong } }
       mistakes: [],     // [ { key, at } ]
       favorites: [],    // [ key ]
+      notes: {},        // { itemKey: { text, updatedAt } }
       daily: {
         streak: 0,
         lastStudyDate: null,
@@ -127,6 +128,18 @@
     merged.mistakes = [...mistakeMap.values()]
       .sort((a, b) => (b.at || 0) - (a.at || 0))
       .slice(0, 100);
+
+    // notes（同 key 取較新 updatedAt）
+    merged.notes = merged.notes || {};
+    if (cloud.notes) {
+      for (const k of Object.keys(cloud.notes)) {
+        const a = merged.notes[k];
+        const b = cloud.notes[k];
+        if (!a || (b.updatedAt || 0) > (a.updatedAt || 0)) {
+          merged.notes[k] = b;
+        }
+      }
+    }
 
     // upgradeDismissed（聯集）
     merged.upgradeDismissed = Object.assign(
@@ -306,6 +319,22 @@
     else progress.favorites.push(key);
     saveProgress();
   }
+  // ---- 個人筆記 ----
+  function getNote(key) {
+    const n = progress.notes && progress.notes[key];
+    return n && n.text ? n.text : '';
+  }
+  function saveNote(key, text) {
+    progress.notes = progress.notes || {};
+    const trimmed = (text || '').trim();
+    if (!trimmed) {
+      delete progress.notes[key];
+    } else {
+      progress.notes[key] = { text: trimmed, updatedAt: Date.now() };
+    }
+    saveProgress();
+  }
+
   function isFavorite(key) {
     return progress.favorites.indexOf(key) >= 0;
   }
@@ -523,6 +552,52 @@
   }
 
   // ---- 工具函式 ----
+  // HTML escape for safe inline output
+  function escapeHTML(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 通用：綁定一個 item 內的筆記按鈕事件（給 vocab/grammar 共用）
+  function bindNoteUI(item, key, onSaved) {
+    const noteBtn = item.querySelector('.note-btn');
+    const area = item.querySelector('.note-area');
+    if (!noteBtn || !area) return;
+    const textarea = area.querySelector('.note-textarea');
+    const saveBtn = area.querySelector('.note-save');
+    const cancelBtn = area.querySelector('.note-cancel');
+
+    noteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const visible = !area.hidden;
+      area.hidden = visible;
+      if (!visible) {
+        textarea.value = getNote(key);
+        textarea.focus();
+      }
+    });
+    saveBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const text = textarea.value;
+      saveNote(key, text);
+      area.hidden = true;
+      item.classList.toggle('has-note', !!text.trim());
+      noteBtn.textContent = text.trim() ? '📝' : '📝＋';
+      noteBtn.title = text.trim() ? '編輯筆記' : '加筆記';
+      if (onSaved) onSaved(text);
+    });
+    cancelBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      area.hidden = true;
+    });
+    // 防止 textarea 點擊冒泡觸發外層 click
+    textarea.addEventListener('click', e => e.stopPropagation());
+  }
+
   function $(id) { return document.getElementById(id); }
   function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
   function shuffle(arr) {
@@ -658,8 +733,9 @@
     for (const v of filtered) {
       const key = 'v:' + v.jp + '|' + v.cn;
       const fav = isFavorite(key);
+      const note = getNote(key);
       const item = document.createElement('div');
-      item.className = 'vocab-item';
+      item.className = 'vocab-item' + (note ? ' has-note' : '');
       item.innerHTML = `
         <button class="fav-btn ${fav ? 'on' : ''}" data-key="${key}"
           title="${fav ? '取消收藏' : '加入收藏'}"
@@ -669,6 +745,16 @@
         <div class="vocab-romaji">${v.romaji}</div>
         <div class="vocab-meaning">${v.cn}</div>
         <div class="vocab-cat">${v.cat}</div>
+        <button class="note-btn" data-key="${key}"
+          title="${note ? '編輯筆記' : '加筆記'}"
+          aria-label="筆記">📝${note ? '' : '＋'}</button>
+        <div class="note-area" data-noteare-key="${key}" hidden>
+          <textarea class="note-textarea" placeholder="記下你的記憶法、聯想、踩過的雷…">${escapeHTML(note)}</textarea>
+          <div class="note-actions">
+            <button class="note-save">儲存</button>
+            <button class="note-cancel">取消</button>
+          </div>
+        </div>
       `;
       const favBtn = item.querySelector('.fav-btn');
       favBtn.addEventListener('click', e => {
@@ -679,8 +765,11 @@
         favBtn.textContent = nowFav ? '★' : '☆';
         favBtn.title = nowFav ? '取消收藏' : '加入收藏';
       });
+      bindNoteUI(item, key);
       item.addEventListener('click', e => {
         if (e.target.closest('.fav-btn')) return;
+        if (e.target.closest('.note-btn')) return;
+        if (e.target.closest('.note-area')) return;
         speak(v.kana.replace(/\s*\/\s*/g, '、'), 'ja-JP');
       });
       list.appendChild(item);
@@ -742,8 +831,9 @@
     filtered.forEach((g, idx) => {
       const key = 'g:' + g.pattern;
       const fav = isFavorite(key);
+      const note = getNote(key);
       const item = document.createElement('div');
-      item.className = 'grammar-item';
+      item.className = 'grammar-item' + (note ? ' has-note' : '');
       const examplesHtml = g.examples.map(ex => `
         <div class="grammar-example">
           <div class="ex-jp">${ex.jp}</div>
@@ -760,17 +850,28 @@
           <div class="grammar-short">${g.short}</div>
           <button class="fav-btn ${fav ? 'on' : ''}" data-key="${key}"
             title="${fav ? '取消收藏' : '加入收藏'}">${fav ? '★' : '☆'}</button>
+          <button class="note-btn" data-key="${key}"
+            title="${note ? '編輯筆記' : '加筆記'}"
+            aria-label="筆記">📝${note ? '' : '＋'}</button>
           <div class="grammar-toggle">▼</div>
         </div>
         <div class="grammar-body">
           <div class="grammar-explain">${g.explain}</div>
           <div class="grammar-examples">${examplesHtml}</div>
+          <div class="note-area" hidden>
+            <textarea class="note-textarea" placeholder="記下你的記憶法、聯想、踩過的雷…">${escapeHTML(note)}</textarea>
+            <div class="note-actions">
+              <button class="note-save">儲存</button>
+              <button class="note-cancel">取消</button>
+            </div>
+          </div>
         </div>
       `;
       const head = item.querySelector('.grammar-head');
       const favBtn = item.querySelector('.fav-btn');
       head.addEventListener('click', e => {
         if (e.target.closest('.fav-btn')) return;
+        if (e.target.closest('.note-btn')) return;
         item.classList.toggle('open');
       });
       favBtn.addEventListener('click', e => {
@@ -781,6 +882,37 @@
         favBtn.textContent = nowFav ? '★' : '☆';
         favBtn.title = nowFav ? '取消收藏' : '加入收藏';
       });
+      // 筆記：grammar 的筆記按鈕點擊要先展開卡片再開 note area
+      const noteBtn = item.querySelector('.note-btn');
+      const noteArea = item.querySelector('.note-area');
+      const noteTextarea = noteArea.querySelector('.note-textarea');
+      const noteSave = noteArea.querySelector('.note-save');
+      const noteCancel = noteArea.querySelector('.note-cancel');
+      noteBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        // 確保卡片展開才看得到 note-area
+        item.classList.add('open');
+        const visible = !noteArea.hidden;
+        noteArea.hidden = visible;
+        if (!visible) {
+          noteTextarea.value = getNote(key);
+          noteTextarea.focus();
+        }
+      });
+      noteSave.addEventListener('click', e => {
+        e.stopPropagation();
+        const text = noteTextarea.value;
+        saveNote(key, text);
+        noteArea.hidden = true;
+        item.classList.toggle('has-note', !!text.trim());
+        noteBtn.textContent = text.trim() ? '📝' : '📝＋';
+        noteBtn.title = text.trim() ? '編輯筆記' : '加筆記';
+      });
+      noteCancel.addEventListener('click', e => {
+        e.stopPropagation();
+        noteArea.hidden = true;
+      });
+      noteTextarea.addEventListener('click', e => e.stopPropagation());
       list.appendChild(item);
     });
   }
@@ -1011,6 +1143,12 @@
       pool = getAllKatakana();
     } else if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp') {
       pool = VOCAB_DATA.filter(v => lvl === 'all' || v.level === lvl);
+    } else if (type === 'vocab-listening-jp' || type === 'vocab-listening-cn') {
+      // 聽力題：排除 jp == kana 的純假名單字（聽到等於看到，沒挑戰），含漢字才有意思
+      pool = VOCAB_DATA.filter(v =>
+        (lvl === 'all' || v.level === lvl) &&
+        v.kana && v.kana.length >= 2
+      );
     } else if (type === 'vocab-kanji-to-kana') {
       // 只挑含漢字、且 jp ≠ kana 的詞
       pool = VOCAB_DATA.filter(v =>
@@ -1165,6 +1303,18 @@
         3
       ).map(p => p.kana);
       options = shuffle([correct, ...distractors]);
+    } else if (type === 'vocab-listening-jp') {
+      // 聽音 → 選漢字。content 標示為 audio，由 renderQuizQuestion 處理 TTS
+      question = { prompt: '聽音選漢字（按 🔊 重播）', content: target.kana, small: false, isAudio: true };
+      correct = target.jp;
+      const distractors = randomPick(pool.filter(p => p.jp !== correct), 3).map(p => p.jp);
+      options = shuffle([correct, ...distractors]);
+    } else if (type === 'vocab-listening-cn') {
+      // 聽音 → 選中文意思
+      question = { prompt: '聽音選意思（按 🔊 重播）', content: target.kana, small: false, isAudio: true };
+      correct = target.cn;
+      const distractors = randomPick(pool.filter(p => p.cn !== correct), 3).map(p => p.cn);
+      options = shuffle([correct, ...distractors]);
     } else if (type === 'grammar') {
       question = { prompt: '這個文法的意思是？', content: target.pattern, small: true };
       correct = target.short;
@@ -1186,11 +1336,28 @@
     const qBox = $('quiz-question');
     const sectionTag = cur.section
       ? `<div class="q-section">［${cur.section}］</div>` : '';
-    qBox.innerHTML = `
-      ${sectionTag}
-      <div class="q-prompt">${cur.question.prompt}</div>
-      <div class="q-content${cur.question.small ? ' small' : ''}">${cur.question.content}</div>
-    `;
+    if (cur.question.isAudio) {
+      // 聽力題：不顯示讀音、給播放按鈕
+      qBox.innerHTML = `
+        ${sectionTag}
+        <div class="q-prompt">${cur.question.prompt}</div>
+        <button class="q-audio-btn" id="q-audio-btn" aria-label="播放讀音">
+          <span class="q-audio-icon">🔊</span>
+          <span class="q-audio-label">播放讀音</span>
+        </button>
+      `;
+      const audioBtn = $('q-audio-btn');
+      const playAudio = () => speak(cur.question.content.replace(/\s*\/\s*/g, '、'), 'ja-JP');
+      audioBtn.addEventListener('click', playAudio);
+      // 自動播一次
+      setTimeout(playAudio, 200);
+    } else {
+      qBox.innerHTML = `
+        ${sectionTag}
+        <div class="q-prompt">${cur.question.prompt}</div>
+        <div class="q-content${cur.question.small ? ' small' : ''}">${cur.question.content}</div>
+      `;
+    }
 
     const optBox = $('quiz-options');
     optBox.innerHTML = '';
@@ -1397,6 +1564,27 @@
     renderHomeStats();
     showPage('home');
     handleAuthCallback();
+    registerServiceWorker();
+  }
+
+  // ---- PWA Service Worker 註冊 ----
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    // 只在 https 或 localhost 才註冊（避免本機 file:// 直開時報錯）
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
+    navigator.serviceWorker.register('service-worker.js').then(reg => {
+      // 若有新版本，提示使用者重整
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            // 有更新可用
+            showToast('已更新到新版本，重新整理生效', 'info', 8000);
+          }
+        });
+      });
+    }).catch(err => console.warn('[SW] register failed:', err));
   }
 
   // ---- Toast 通知 ----

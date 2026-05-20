@@ -696,6 +696,34 @@ html[data-theme="dark"] .theme-toggle .thumb {
 }
 .quiz-question .q-content.small { font-size: 22px; }
 
+/* 聽力題的播放按鈕 */
+.q-audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 18px 32px;
+  border: 2px solid var(--accent);
+  border-radius: 50px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.q-audio-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+.q-audio-btn:active { transform: scale(0.97); }
+.q-audio-btn .q-audio-icon { font-size: 28px; line-height: 1; }
+@media (max-width: 720px) {
+  .q-audio-btn { font-size: 16px; padding: 14px 22px; }
+  .q-audio-btn .q-audio-icon { font-size: 24px; }
+}
+
 .quiz-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -957,12 +985,107 @@ html[data-theme="dark"] .srs-lv-0 { background: #444; }
 }
 .fav-more { font-size: 12px; color: var(--text-soft); align-self: center; }
 
+/* === 筆記功能（vocab + grammar 通用）=== */
+.note-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  line-height: 1.2;
+}
+.note-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+.has-note .note-btn {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+/* 提示「卡片有筆記」— 左側細色條 */
+.vocab-item.has-note,
+.grammar-item.has-note {
+  position: relative;
+}
+.vocab-item.has-note::before,
+.grammar-item.has-note::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.note-area {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg-soft, var(--bg-card));
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.grammar-item .note-area { margin: 10px 0 4px; }
+.note-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.note-textarea:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+.note-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.note-save, .note-cancel {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.note-save {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.note-save:hover { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+.note-cancel:hover { background: var(--bg-soft, var(--accent-soft)); }
+
 /* === Star (favorite) button === */
 .vocab-item { position: relative; padding-right: 36px; }
+.vocab-item { position: relative; }
 .vocab-item .fav-btn {
   position: absolute;
   top: 8px;
   right: 8px;
+}
+.vocab-item .note-btn {
+  position: absolute;
+  top: 10px;
+  right: 38px;        /* 在 fav-btn 左邊 */
+  font-size: 13px;
 }
 .fav-btn {
   background: transparent;

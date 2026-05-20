@@ -14,6 +14,9 @@
 - **文法功能分類索引**：除了 N5–N1 等級，還能按語意功能篩選（條件、轉折、推測、敬語、書面文語…共 36 類）。
 - **文法搜尋**：可在文法頁直接搜尋句型、含意或解釋關鍵字。
 - **回頂端按鈕**：右下角懸浮，捲動超過 300px 自動出現，平滑回頂。
+- **PWA 離線支援**：可加入手機主畫面、沒網路時也能練習；上線自動同步進度。
+- **聽力題型**：聽音 → 選漢字 / 中文（瀏覽器內建 TTS）。
+- **個人筆記**：每個單字／文法可以寫自己的記憶法／聯想，跟著 SRS 一起雲端同步。
 - **五十音** 平假名 / 片假名各 46+25+33 = 208 字（清音、濁音／半濁音、拗音）。
 - **8 種測驗題型**：四種五十音題型（平 / 片 ⇆ 羅馬）、漢字読み、單字日中互譯、文法選擇。
 - **JLPT 模擬卷**：按 JLPT 真實比例自動配比五十音、單字、文法題。
@@ -107,6 +110,8 @@ japanese-learning-site/
 ├── index.html                 ← 單頁應用骨架（6 個 section + 2 個 modal + 回頂端按鈕）
 ├── styles.css                 ← 全部樣式（深淺色 CSS 變數、響應式）
 ├── favicon.svg                ← 紅圓底 + あ
+├── manifest.json              ← PWA Web App Manifest（加入主畫面用）
+├── service-worker.js          ← PWA Service Worker（離線快取 + 自動更新）
 ├── tests/
 │   └── data-sanity.js         ← 資料完整性測試（部署前必跑）
 ├── js/
@@ -116,7 +121,7 @@ japanese-learning-site/
 │   ├── vocab.js               ← N5–N1 單字陣列 VOCAB_DATA + getCategories()
 │   ├── grammar.js             ← N5–N1 文法陣列 GRAMMAR_DATA
 │   ├── grammar-tags.js        ← 文法功能分類（GRAMMAR_TAGS + 反查 helper）
-│   └── app.js                 ← 主應用（state、渲染、測驗、SRS、估算…）
+│   └── app.js                 ← 主應用（state、渲染、測驗、SRS、估算、筆記、PWA 註冊…）
 └── supabase/
     ├── schema.sql             ← user_data 表 + RLS + 註冊 trigger
     └── add-delete-user.sql    ← delete_user RPC 函式（讓使用者自刪帳號）
@@ -382,6 +387,12 @@ JSON.parse(localStorage.getItem('jp-learn-progress'))
 - **不要在使用者沒按下 GO 之前自動部署**。
 
 ---
+
+## 🔄 PWA 注意事項
+
+- **更新版本**：修改任何快取的檔案後，請把 `service-worker.js` 的 `CACHE_VERSION` 加一（例如 `v1` → `v2`）。下次使用者進站，SW 會察覺新版本、自動拉新檔、淘汰舊快取，並 toast「已更新到新版本，重新整理生效」。
+- **加入主畫面**：手機開啟網站 → 瀏覽器選單「加到主畫面」/「加到主螢幕」即可變成 app 圖示。iOS Safari 與 Android Chrome 都支援。
+- **離線範圍**：核心檔（HTML/CSS/JS/單字/文法/五十音）都會快取。**登入 / 雲端同步 / Supabase 相關功能離線時無法使用**（按設計如此 — 認證必須線上），但離線時仍可瀏覽資料、做測驗、寫筆記，上線後進度自動同步。
 
 ## 📌 未來路線（idea backlog）
 

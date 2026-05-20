@@ -6,7 +6,11 @@
   <title>日本語スタート - 日文初學者學習網站</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#d64545">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="日本語">
   <script>
     // 在 CSS 套用前就決定主題，避免閃白
     (function() {
@@ -283,6 +287,13 @@
             <button class="quiz-type" data-type="vocab-kanji-to-kana">漢字読み（漢字→讀音）</button>
             <button class="quiz-type" data-type="vocab-jp-to-cn">單字 日 → 中</button>
             <button class="quiz-type" data-type="vocab-cn-to-jp">語彙置き換え 中 → 日</button>
+          </div>
+        </div>
+        <div class="quiz-section-group">
+          <div class="quiz-section-label">聴解（聽力）</div>
+          <div class="quiz-types">
+            <button class="quiz-type" data-type="vocab-listening-jp">🔊 聽音 → 選漢字</button>
+            <button class="quiz-type" data-type="vocab-listening-cn">🔊 聽音 → 選中文</button>
           </div>
         </div>
         <div class="quiz-section-group">
