@@ -3458,15 +3458,6 @@ const GRAMMAR_DATA = [
     ]
   },
   {
-    pattern: '〜であれ〜であれ',
-    level: 'N1',
-    short: '不論是〜還是〜',
-    explain: '名詞＋であれ×2。書面語列舉。',
-    examples: [
-      { jp:'大人であれ子供であれ、ルールを守るべきだ。', kana:'おとなであれこどもであれ、るーるをまもるべきだ。', romaji:'Otona de are kodomo de are, ruuru wo mamoru beki da.', cn:'不論大人小孩都該遵守規則。' }
-    ]
-  },
-  {
     pattern: '〜なくしては',
     level: 'N1',
     short: '沒有〜就不能〜',
@@ -4662,6 +4653,279 @@ const GRAMMAR_DATA = [
     explain: '動詞辭書形＋にしのびない。',
     examples: [
       { jp:'見るにしのびない光景だ。', kana:'みるにしのびないこうけいだ。', romaji:'Miru ni shinobinai koukei da.', cn:'不忍卒睹的景象。' }
+    ]
+  }
+,
+
+  // ==== Session 8 文法補充 ====
+  {
+    pattern: '〜ことだ',
+    level: 'N3',
+    short: '應該〜（忠告）',
+    explain: '動詞辭書形／ない形＋ことだ。給予建議或忠告。',
+    examples: [
+      { jp:'健康のために、毎日運動することだ。', kana:'けんこうのために、まいにちうんどうすることだ。', romaji:'Kenkou no tame ni, mainichi undou suru koto da.', cn:'為了健康應該每天運動。' }
+    ]
+  },
+  {
+    pattern: '〜ことに',
+    level: 'N3',
+    short: '令人〜的是',
+    explain: '形容詞／動詞た形＋ことに。對某事感到驚訝、感動等。',
+    examples: [
+      { jp:'残念なことに、試合は中止になった。', kana:'ざんねんなことに、しあいはちゅうしになった。', romaji:'Zannen na koto ni, shiai wa chuushi ni natta.', cn:'令人遺憾的是比賽取消了。' }
+    ]
+  },
+  {
+    pattern: '〜つもりで',
+    level: 'N3',
+    short: '當作〜的心情',
+    explain: '動詞た形／名詞の＋つもりで。「打算當作是〜」做某事。',
+    examples: [
+      { jp:'死んだつもりで頑張ります。', kana:'しんだつもりでがんばります。', romaji:'Shinda tsumori de ganbarimasu.', cn:'抱著拚死的決心努力。' }
+    ]
+  },
+  {
+    pattern: '〜ふりをする',
+    level: 'N3',
+    short: '裝出〜的樣子',
+    explain: '動詞普通形／名詞の／形容詞＋ふりをする。「假裝〜」。',
+    examples: [
+      { jp:'寝たふりをして話を聞いていた。', kana:'ねたふりをしてはなしをきいていた。', romaji:'Neta furi wo shite hanashi wo kiite ita.', cn:'裝睡偷聽。' }
+    ]
+  },
+  {
+    pattern: '〜ように見える',
+    level: 'N3',
+    short: '看起來像〜',
+    explain: '名詞の／普通形＋ように見える。',
+    examples: [
+      { jp:'彼は元気そうに見えるけど、実は疲れている。', kana:'かれはげんきそうにみえるけど、じつはつかれている。', romaji:'Kare wa genki sou ni mieru kedo, jitsu wa tsukarete iru.', cn:'他看起來有精神，其實很累。' }
+    ]
+  },
+  {
+    pattern: '〜ばかりだ（一直惡化）',
+    level: 'N3',
+    short: '一直在〜（朝壞方向）',
+    explain: '動詞辭書形＋ばかりだ。情況持續往一個方向發展（多半是負面）。',
+    examples: [
+      { jp:'物価は上がるばかりだ。', kana:'ぶっかはあがるばかりだ。', romaji:'Bukka wa agaru bakari da.', cn:'物價只升不降。' }
+    ]
+  },
+  {
+    pattern: '〜ようがない / 〜ようもない',
+    level: 'N3',
+    short: '無法〜',
+    explain: '動詞ます形去ます＋ようがない／ようもない。',
+    examples: [
+      { jp:'連絡先を知らないので、連絡しようがない。', kana:'れんらくさきをしらないので、れんらくしようがない。', romaji:'Renrakusaki wo shiranai node, renraku shiyou ga nai.', cn:'不知道聯絡方式所以無法聯絡。' }
+    ]
+  },
+  {
+    pattern: '〜ようとしない',
+    level: 'N3',
+    short: '不肯〜',
+    explain: '動詞意志形＋としない。表示對方拒絕做某事。',
+    examples: [
+      { jp:'弟は野菜を食べようとしない。', kana:'おとうとはやさいをたべようとしない。', romaji:'Otouto wa yasai wo tabeyou to shinai.', cn:'弟弟不肯吃蔬菜。' }
+    ]
+  },
+  {
+    pattern: '〜こそすれ〜ない',
+    level: 'N3',
+    short: '只會〜不會〜',
+    explain: '動詞ます形去ます＋こそすれ〜ない。',
+    examples: [
+      { jp:'感謝こそすれ、文句を言うつもりはない。', kana:'かんしゃこそすれ、もんくをいうつもりはない。', romaji:'Kansha koso sure, monku wo iu tsumori wa nai.', cn:'只會感激不會抱怨。' }
+    ]
+  },
+  {
+    pattern: '〜よりほか（は）ない',
+    level: 'N3',
+    short: '只能〜',
+    explain: '動詞辭書形＋よりほかはない。',
+    examples: [
+      { jp:'こうなったら、諦めるよりほかはない。', kana:'こうなったら、あきらめるよりほかはない。', romaji:'Kou nattara, akirameru yori hoka wa nai.', cn:'事到如今只能放棄了。' }
+    ]
+  },
+  {
+    pattern: '〜しかない',
+    level: 'N3',
+    short: '只能〜（無選擇）',
+    explain: '動詞辭書形＋しかない。',
+    examples: [
+      { jp:'バスが来ないから、歩くしかない。', kana:'ばすがこないから、あるくしかない。', romaji:'Basu ga konai kara, aruku shika nai.', cn:'公車不來只能走路。' }
+    ]
+  },
+  {
+    pattern: '〜たって',
+    level: 'N3',
+    short: '即使〜（口語）',
+    explain: '動詞た形＋って。〜ても 的口語形式。',
+    examples: [
+      { jp:'いくら頼んだって駄目だよ。', kana:'いくらたのんだってだめだよ。', romaji:'Ikura tanonda tte dame da yo.', cn:'再怎麼拜託都不行。' }
+    ]
+  },
+  {
+    pattern: '〜と思ったら',
+    level: 'N3',
+    short: '剛〜就〜',
+    explain: '動詞た形＋と思ったら。表示前項剛發生立刻接後項。',
+    examples: [
+      { jp:'雨がやんだと思ったら、また降りだした。', kana:'あめがやんだとおもったら、またふりだした。', romaji:'Ame ga yanda to omottara, mata furi dashita.', cn:'雨剛停又下了。' }
+    ]
+  },
+  {
+    pattern: '〜とあらば',
+    level: 'N1',
+    short: '若是〜的話（書面）',
+    explain: '名詞／普通形＋とあらば。如果是這個情況的話。',
+    examples: [
+      { jp:'お困りとあらば、お手伝いします。', kana:'おこまりとあらば、おてつだいします。', romaji:'Okomari to araba, otetsudai shimasu.', cn:'若您有困難就讓我來幫忙。' }
+    ]
+  },
+  {
+    pattern: '〜にしてからが',
+    level: 'N1',
+    short: '連〜都〜',
+    explain: '名詞＋にしてからが。舉出極端例子強調。',
+    examples: [
+      { jp:'専門家にしてからが解けない問題だ。', kana:'せんもんかにしてからがとけないもんだいだ。', romaji:'Senmonka ni shite kara ga tokenai mondai da.', cn:'連專家都解不了的問題。' }
+    ]
+  },
+  {
+    pattern: '〜たるや',
+    level: 'N1',
+    short: '說到〜（書面強調）',
+    explain: '名詞＋たるや。書面語，引出令人驚嘆的對象。',
+    examples: [
+      { jp:'その人気たるや、想像を絶するものだ。', kana:'そのにんきたるや、そうぞうをぜっするものだ。', romaji:'Sono ninki taru ya, souzou wo zessuru mono da.', cn:'說到其受歡迎程度，超乎想像。' }
+    ]
+  },
+  {
+    pattern: '〜ものとして',
+    level: 'N1',
+    short: '當作〜',
+    explain: '普通形＋ものとして。視為前提。',
+    examples: [
+      { jp:'これは事実だものとして話を進めよう。', kana:'これはじじつだものとしてはなしをすすめよう。', romaji:'Kore wa jijitsu da mono to shite hanashi wo susumeyou.', cn:'就把這當作事實往下談吧。' }
+    ]
+  },
+  {
+    pattern: '〜ようものなら',
+    level: 'N1',
+    short: '萬一〜的話會〜（後果嚴重）',
+    explain: '動詞意志形＋ものなら。表示假設發生會帶來重大後果。',
+    examples: [
+      { jp:'遅刻しようものなら、彼に怒鳴られる。', kana:'ちこくしようものなら、かれにどなられる。', romaji:'Chikoku shiyou mono nara, kare ni donarareru.', cn:'萬一遲到會被他罵。' }
+    ]
+  },
+  {
+    pattern: '〜ながらに（して）',
+    level: 'N1',
+    short: '保持〜的狀態（書面）',
+    explain: '名詞／動詞ます形＋ながらに。',
+    examples: [
+      { jp:'彼は涙ながらに語った。', kana:'かれはなみだながらにかたった。', romaji:'Kare wa namida nagara ni katatta.', cn:'他含淚訴說。' }
+    ]
+  },
+  {
+    pattern: '〜とは（定義）',
+    level: 'N1',
+    short: '所謂〜是指〜',
+    explain: '名詞＋とは＋說明。書面定義式表達。',
+    examples: [
+      { jp:'幸せとは、健康な家族と過ごす時間のことだ。', kana:'しあわせとは、けんこうなかぞくとすごすじかんのことだ。', romaji:'Shiawase to wa, kenkou na kazoku to sugosu jikan no koto da.', cn:'所謂幸福，就是和健康的家人共度的時光。' }
+    ]
+  },
+  {
+    pattern: '〜ともなく / 〜ともなしに',
+    level: 'N1',
+    short: '無意識地〜',
+    explain: '動詞辭書形＋ともなく／ともなしに。表示不經意做某動作。',
+    examples: [
+      { jp:'見るともなしに見ていた。', kana:'みるともなしにみていた。', romaji:'Miru tomo nashi ni mite ita.', cn:'漫不經心地看著。' }
+    ]
+  },
+  {
+    pattern: '〜んばかり（に）',
+    level: 'N1',
+    short: '幾乎要〜',
+    explain: '動詞ない形去ない＋んばかり。書面誇張表達。',
+    examples: [
+      { jp:'飛び上がらんばかりに喜んだ。', kana:'とびあがらんばかりによろこんだ。', romaji:'Tobiagaran bakari ni yorokonda.', cn:'高興得幾乎要跳起來。' }
+    ]
+  },
+  {
+    pattern: '〜にして（驚嘆）',
+    level: 'N1',
+    short: '身為〜竟然',
+    explain: '名詞＋にして。前項是強烈條件，後項出乎意料。',
+    examples: [
+      { jp:'プロにして失敗するとは。', kana:'ぷろにしてしっぱいするとは。', romaji:'Puro ni shite shippai suru to wa.', cn:'身為專家竟然會失敗。' }
+    ]
+  },
+  {
+    pattern: '〜のなんの',
+    level: 'N1',
+    short: '又是〜又是〜（口語強調）',
+    explain: '形容詞／動詞普通形＋のなんの。強調程度。',
+    examples: [
+      { jp:'寒いのなんのって、震えが止まらない。', kana:'さむいのなんのって、ふるえがとまらない。', romaji:'Samui no nanno tte, furue ga tomaranai.', cn:'冷得不得了，發抖個不停。' }
+    ]
+  },
+  {
+    pattern: '〜ばや〜',
+    level: 'N1',
+    short: '希望〜（古雅）',
+    explain: '動詞ば形＋や。文語、表願望或意願。',
+    examples: [
+      { jp:'いずこへか行かばや。', kana:'いずこへかいかばや。', romaji:'Izuko e ka ikabaya.', cn:'真想去某處啊。' }
+    ]
+  },
+  {
+    pattern: '〜次第では',
+    level: 'N1',
+    short: '視〜情況',
+    explain: '名詞＋次第では。',
+    examples: [
+      { jp:'天気次第では、明日の試合は延期される。', kana:'てんきしだいでは、あしたのしあいはえんきされる。', romaji:'Tenki shidai de wa, ashita no shiai wa enki sareru.', cn:'視天氣狀況明天比賽會延期。' }
+    ]
+  },
+  {
+    pattern: '〜いかんで',
+    level: 'N1',
+    short: '視〜如何',
+    explain: '名詞（の）＋いかんで。書面語。',
+    examples: [
+      { jp:'結果いかんで、対応を考える。', kana:'けっかいかんで、たいおうをかんがえる。', romaji:'Kekka ikan de, taiou wo kangaeru.', cn:'視結果如何來考慮應對。' }
+    ]
+  },
+  {
+    pattern: '〜いかんによらず / 〜いかんを問わず',
+    level: 'N1',
+    short: '不論〜如何',
+    explain: '名詞の＋いかんによらず／を問わず。',
+    examples: [
+      { jp:'理由のいかんを問わず、遅刻は認めない。', kana:'りゆうのいかんをとわず、ちこくはみとめない。', romaji:'Riyuu no ikan wo towazu, chikoku wa mitomenai.', cn:'不論何種理由都不接受遲到。' }
+    ]
+  },
+  {
+    pattern: '〜こと（書面命令）',
+    level: 'N1',
+    short: '必須〜（書面公告）',
+    explain: '動詞辭書形／ない形＋こと。常用於規則、告示。',
+    examples: [
+      { jp:'立ち入らないこと。', kana:'たちいらないこと。', romaji:'Tachiiranai koto.', cn:'禁止進入。' }
+    ]
+  },
+  {
+    pattern: '〜ところ（だった）',
+    level: 'N1',
+    short: '差點就〜',
+    explain: '動詞辭書形＋ところだった。差一點發生但沒發生。',
+    examples: [
+      { jp:'危ない、転ぶところだった。', kana:'あぶない、ころぶところだった。', romaji:'Abunai, korobu tokoro datta.', cn:'好險，差點跌倒。' }
     ]
   }
 ];

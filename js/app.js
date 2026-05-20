@@ -8,6 +8,8 @@
     currentKanaTab: 'hira-basic',
     vocabLevel: 'N5',
     grammarLevel: 'N5',
+    grammarTag: 'all',        // 功能分類篩選（'all' = 全部）
+    grammarSearch: '',        // 文法搜尋字串
     showRomaji: true,
     theme: 'light',
     quiz: null
@@ -509,6 +511,7 @@
     const qSel = $('quiz-level'); if (qSel && [...qSel.options].some(o => o.value === toLevel)) qSel.value = toLevel;
     renderVocabCategories();
     renderVocabList();
+    renderGrammarTagBar();
     renderGrammar();
     renderReview();
   }
@@ -685,16 +688,55 @@
   }
 
   // ---- 文法渲染 ----
+  // 渲染功能分類橫條（chip 列表）
+  function renderGrammarTagBar() {
+    const bar = $('grammar-tag-bar');
+    if (!bar || typeof window.GRAMMAR_TAG_ORDER === 'undefined') return;
+    const lvl = state.grammarLevel;
+    // 計算各 tag 在當前等級內的覆蓋數
+    const inScope = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
+    const counts = { all: inScope.length };
+    for (const tag of window.GRAMMAR_TAG_ORDER) counts[tag] = 0;
+    for (const g of inScope) {
+      for (const t of window.getGrammarTags(g.pattern)) counts[t]++;
+    }
+    const chips = ['<button class="tag-chip ' + (state.grammarTag === 'all' ? 'active' : '') + '" data-tag="all">全部 <span>' + counts.all + '</span></button>'];
+    for (const tag of window.GRAMMAR_TAG_ORDER) {
+      if (counts[tag] === 0) continue; // 該等級下沒有條目的 tag 不顯示
+      const active = state.grammarTag === tag ? 'active' : '';
+      chips.push('<button class="tag-chip ' + active + '" data-tag="' + tag + '">' + tag + ' <span>' + counts[tag] + '</span></button>');
+    }
+    bar.innerHTML = chips.join('');
+    bar.querySelectorAll('.tag-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.grammarTag = btn.dataset.tag;
+        renderGrammarTagBar();
+        renderGrammar();
+      });
+    });
+  }
+
   function renderGrammar() {
     const list = $('grammar-list');
     const stats = $('grammar-stats');
     const lvl = state.grammarLevel;
-    const filtered = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
+    const tag = state.grammarTag;
+    const q = (state.grammarSearch || '').trim().toLowerCase();
+    const filtered = GRAMMAR_DATA.filter(g => {
+      if (lvl !== 'all' && g.level !== lvl) return false;
+      if (tag !== 'all') {
+        const tags = window.getGrammarTags ? window.getGrammarTags(g.pattern) : [];
+        if (!tags.includes(tag)) return false;
+      }
+      if (q) {
+        const hay = (g.pattern + ' ' + g.short + ' ' + g.explain).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
     if (stats) {
-      const totalForLevel = lvl === 'all'
-        ? GRAMMAR_DATA.length
-        : GRAMMAR_DATA.filter(g => g.level === lvl).length;
-      stats.textContent = `共 ${filtered.length} 條（${lvl === 'all' ? '全部' : lvl}）`;
+      const tagLabel = tag === 'all' ? '' : '・' + tag;
+      stats.textContent = `共 ${filtered.length} 條（${lvl === 'all' ? '全部' : lvl}${tagLabel}）`;
     }
     list.innerHTML = '';
     filtered.forEach((g, idx) => {
@@ -1300,9 +1342,18 @@
       renderVocabList();
     });
 
-    // 等級下拉（文法）
+    // 等級下拉（文法）— 切等級時 tag 過濾要回到「全部」否則容易看不到資料
     $('grammar-level-select').addEventListener('change', e => {
       state.grammarLevel = e.target.value;
+      state.grammarTag = 'all';
+      renderGrammarTagBar();
+      renderGrammar();
+    });
+
+    // 文法搜尋
+    const gs = $('grammar-search');
+    if (gs) gs.addEventListener('input', e => {
+      state.grammarSearch = e.target.value;
       renderGrammar();
     });
 
@@ -1341,6 +1392,7 @@
     renderKana('hira-basic');
     renderVocabCategories();
     renderVocabList();
+    renderGrammarTagBar();
     renderGrammar();
     renderHomeStats();
     showPage('home');

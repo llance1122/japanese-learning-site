@@ -9,8 +9,11 @@
 
 針對華語使用者打造的個人化日文學習網站，特色：
 
-- **單字** 6,897 筆（N5 925 / N4 769 / N3 1,525 / N2 1,728 / N1 1,950），含漢字、假名、羅馬拼音、繁體中文意思、分類。
-- **文法** 507 條（N5 72 / N4 94 / N3 119 / N2 118 / N1 104），每條附句型、簡短說明、完整解釋、1～3 個例句。
+- **單字** 7,150 筆（N5 925 / N4 820 / N3 1,596 / N2 1,728 / N1 2,081），含漢字、假名、羅馬拼音、繁體中文意思、分類。
+- **文法** 536 條（N5 72 / N4 94 / N3 132 / N2 118 / N1 120），每條附句型、簡短說明、完整解釋、1～3 個例句。
+- **文法功能分類索引**：除了 N5–N1 等級，還能按語意功能篩選（條件、轉折、推測、敬語、書面文語…共 36 類）。
+- **文法搜尋**：可在文法頁直接搜尋句型、含意或解釋關鍵字。
+- **回頂端按鈕**：右下角懸浮，捲動超過 300px 自動出現，平滑回頂。
 - **五十音** 平假名 / 片假名各 46+25+33 = 208 字（清音、濁音／半濁音、拗音）。
 - **8 種測驗題型**：四種五十音題型（平 / 片 ⇆ 羅馬）、漢字読み、單字日中互譯、文法選擇。
 - **JLPT 模擬卷**：按 JLPT 真實比例自動配比五十音、單字、文法題。
@@ -101,15 +104,18 @@
 ```
 japanese-learning-site/
 ├── README.md                  ← 本文件
-├── index.html                 ← 單頁應用骨架（6 個 section + 2 個 modal）
+├── index.html                 ← 單頁應用骨架（6 個 section + 2 個 modal + 回頂端按鈕）
 ├── styles.css                 ← 全部樣式（深淺色 CSS 變數、響應式）
 ├── favicon.svg                ← 紅圓底 + あ
+├── tests/
+│   └── data-sanity.js         ← 資料完整性測試（部署前必跑）
 ├── js/
 │   ├── supabase-config.js     ← Supabase client 初始化 + auth callback type 攔截
 │   ├── auth.js                ← AuthState 全域物件、登入登出、雲端同步
 │   ├── kana.js                ← 五十音資料（KANA_DATA + flatten 函式）
 │   ├── vocab.js               ← N5–N1 單字陣列 VOCAB_DATA + getCategories()
 │   ├── grammar.js             ← N5–N1 文法陣列 GRAMMAR_DATA
+│   ├── grammar-tags.js        ← 文法功能分類（GRAMMAR_TAGS + 反查 helper）
 │   └── app.js                 ← 主應用（state、渲染、測驗、SRS、估算…）
 └── supabase/
     ├── schema.sql             ← user_data 表 + RLS + 註冊 trigger
@@ -244,17 +250,17 @@ japanese-learning-site/
 |---|---|
 | 五十音 | 208 |
 | N5 單字 | 925 |
-| N4 單字 | 769 |
-| N3 單字 | 1,525 |
+| N4 單字 | 820 |
+| N3 單字 | 1,596 |
 | N2 單字 | 1,728 |
-| N1 單字 | 1,950 |
-| **單字合計** | **6,897** |
+| N1 單字 | 2,081 |
+| **單字合計** | **7,150** |
 | N5 文法 | 72 |
 | N4 文法 | 94 |
-| N3 文法 | 119 |
+| N3 文法 | 132 |
 | N2 文法 | 118 |
-| N1 文法 | 104 |
-| **文法合計** | **507** |
+| N1 文法 | 120 |
+| **文法合計** | **536** |
 
 ### 跟 JLPT 歷史標準比
 
@@ -312,17 +318,35 @@ python -m http.server 5173
 
 開瀏覽器：http://localhost:5173/
 
-### 改完資料一定要驗
+### 改完資料一定要跑測試
 
 ```powershell
-# 單字
-node -e "const fs=require('fs'); const c=fs.readFileSync('js/vocab.js','utf8'); const fn=new Function(c+'; return VOCAB_DATA;'); const a=fn(); console.log('len:', a.length); const c2={}; for (const v of a) c2[v.level]=(c2[v.level]||0)+1; console.log(c2);"
-
-# 文法
-node -e "const fs=require('fs'); const c=fs.readFileSync('js/grammar.js','utf8'); const fn=new Function(c+'; return GRAMMAR_DATA;'); const a=fn(); console.log('len:', a.length);"
+node tests/data-sanity.js
 ```
 
-如果 `new Function(...)` 拋錯，表示語法壞了；如果 eval 出來的 length 跟你預期的不一致，可能像上面的「錯置事故」一樣陣列被截斷。
+這支測試會檢查：
+- vocab.js / grammar.js 語法 OK 且能 eval
+- **只有一個頂層 `];`**（防止 Session 1-7 / Phase 4 那種錯置事故）
+- **VOCAB_DATA_END_MARKER 錨點存在**（給未來插入腳本用）
+- regex 計數 == eval 計數（沒 entry 漏網）
+- 每筆都有完整欄位、level 合法
+- 沒有 (jp, cn, level) 完全重複
+- 文法 examples 結構完整
+- kana 6 個群組都在
+
+回傳 exit code 1 表示失敗，0 表示通過。**部署前一定要先看到 `0 fail`**。
+
+### ⚠️ 補單字 / 文法時的標準流程
+
+1. **永遠用 VOCAB_DATA_END_MARKER 當錨點**（單字）：
+   ```js
+   // 不要用 c.lastIndexOf('];')，會找到 getCategories 的結尾！
+   const idx = vocabSrc.indexOf('// VOCAB_DATA_END_MARKER');
+   const newContent = vocabSrc.slice(0, idx) + newEntriesBlob + vocabSrc.slice(idx);
+   ```
+2. **寫入後立刻跑 `node tests/data-sanity.js`**
+3. **eval VOCAB_DATA 確認 length 是 regex 計數**（測試已內建）
+4. 通過後再 `az webapp up --html`
 
 ### Console 即時看資料
 

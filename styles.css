@@ -325,6 +325,74 @@ html[data-theme="dark"] .theme-toggle .thumb {
   font-size: 14px;
   margin-bottom: 12px;
 }
+
+/* === 文法功能標籤橫條 === */
+.grammar-tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  max-height: 88px;          /* 桌機預設兩排，避免太佔版面 */
+  overflow-y: auto;
+  padding-bottom: 2px;
+}
+.grammar-tag-bar .tag-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.grammar-tag-bar .tag-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark, var(--accent));
+}
+.grammar-tag-bar .tag-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.grammar-tag-bar .tag-chip span {
+  font-size: 11px;
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+.grammar-tag-bar .tag-chip.active span {
+  background: rgba(255, 255, 255, 0.25);
+  opacity: 1;
+}
+@media (max-width: 720px) {
+  .grammar-tag-bar { max-height: 80px; gap: 5px; }
+  .grammar-tag-bar .tag-chip { padding: 4px 10px; font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .grammar-tag-bar { max-height: 72px; }
+  .grammar-tag-bar .tag-chip span { display: none; } /* 小手機隱藏 count 省空間 */
+}
+/* search input 共用既有的 vocab-search 樣式族系 — 套同樣的視覺 */
+#grammar-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+}
+#grammar-search:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
 .card-badge {
   display: inline-block;
   background: var(--accent-soft);
