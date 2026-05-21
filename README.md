@@ -419,5 +419,5 @@ JSON.parse(localStorage.getItem('jp-learn-progress'))
 4. 手寫筆順練習（Canvas + KanjiVG 資料）
 5. 進度匯出／匯入 JSON
 6. Quiz 答對時的音效 / 動畫
-7. 文章查字引擎升級（kuromoji.js 真正分詞、目前是 longest-prefix + 變化形延伸）
-8. い形容詞 / な形容詞變化練習題型
+7. い形容詞 / な形容詞變化練習題型
+8. 文章查字工具（曾實作過 [historical commit] 但因使用率太低拆掉；若再做要升級到 kuromoji.js 真正分詞）
