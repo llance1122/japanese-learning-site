@@ -632,6 +632,8 @@
       b.classList.toggle('active', b.dataset.page === name);
     });
     if (name === 'review') renderReview();
+    if (name === 'quiz') renderDailyChallengeCard();
+    if (name === 'leaderboard') renderLeaderboard();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1441,6 +1443,23 @@
       `;
       review.appendChild(item);
     });
+
+    // 每日挑戰：寫本機 + 提交雲端
+    if (q.type === 'daily-challenge' && q.dailyDate) {
+      const score = q.correctCount * 10;          // 滿分 100
+      const maxScore = q.questions.length * 10;
+      saveDailyChallengeLocal(q.dailyDate, score, maxScore);
+      if (window.AuthState && window.AuthState.user) {
+        window.AuthState.submitDailyScore(q.dailyDate, score, maxScore)
+          .then(() => showToast(`今日挑戰已上傳！${score} / ${maxScore} 分`, 'success'))
+          .catch(err => {
+            console.error('submitDailyScore failed', err);
+            showToast('分數上傳失敗：' + (err.message || '請稍後再試'), 'error');
+          });
+      } else {
+        showToast('未登入 — 分數只存在本機，沒進排行榜', 'info', 6000);
+      }
+    }
   }
 
   function quitQuiz() {
@@ -1448,6 +1467,189 @@
     $('quiz-active').classList.add('hidden');
     $('quiz-result').classList.add('hidden');
     $('quiz-setup').classList.remove('hidden');
+    // 回 setup 時刷一下每日挑戰卡片（顯示分數）
+    renderDailyChallengeCard();
+  }
+
+  // ============================================================
+  // ====              每日挑戰（Daily Challenge）            ====
+  // ============================================================
+  const DAILY_LOCAL_KEY = 'jp-learn-daily-challenge';
+
+  function loadDailyChallengeLocal() {
+    try {
+      const raw = localStorage.getItem(DAILY_LOCAL_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function saveDailyChallengeLocal(date, score, maxScore) {
+    try {
+      localStorage.setItem(DAILY_LOCAL_KEY, JSON.stringify({
+        date, score, maxScore, completedAt: Date.now()
+      }));
+    } catch (e) {}
+  }
+  function getTodayLocalScore() {
+    const r = loadDailyChallengeLocal();
+    if (!r || !window.DailyChallenge) return null;
+    return r.date === window.DailyChallenge.todayDate() ? r : null;
+  }
+
+  function startDailyChallenge() {
+    if (!window.DailyChallenge) { showToast('每日挑戰模組未載入', 'error'); return; }
+    const dc = window.DailyChallenge.getTodayChallenge();
+    if (!dc.items || !dc.items.length) {
+      showToast('今天的題目產生失敗', 'error');
+      return;
+    }
+    // 把 (type, target) → 完整 question
+    const questions = dc.items.map(it => {
+      let pool;
+      if (it.type === 'vocab-kanji-to-kana' || it.type === 'vocab-jp-to-cn' || it.type === 'vocab-listening-jp') {
+        pool = VOCAB_DATA;
+      } else if (it.type === 'grammar') {
+        pool = GRAMMAR_DATA;
+      } else if (it.type === 'hira-to-romaji') {
+        pool = getAllHiragana();
+      }
+      const q = buildQuestion(it.type, it.target, pool);
+      q.section = '每日挑戰';
+      return q;
+    });
+    state.quiz = {
+      type: 'daily-challenge',
+      dailyDate: dc.date,
+      questions,
+      currentIdx: 0,
+      correctCount: 0,
+      answers: []
+    };
+    showPage('quiz');
+    $('quiz-setup').classList.add('hidden');
+    $('quiz-result').classList.add('hidden');
+    $('quiz-active').classList.remove('hidden');
+    renderQuizQuestion();
+  }
+
+  async function renderDailyChallengeCard() {
+    if (!window.DailyChallenge) return;
+    const dateStr = window.DailyChallenge.todayDate();
+    const dEl = $('dc-date');
+    if (dEl) dEl.textContent = dateStr;
+
+    const status = $('dc-status');
+    const btn = $('dc-start-btn');
+    if (!status || !btn) return;
+
+    let myToday = getTodayLocalScore();
+    // 已登入時也問問雲端（防換裝置）
+    if (!myToday && window.AuthState && window.AuthState.user) {
+      const cloud = await window.AuthState.fetchMyDailyScore(dateStr);
+      if (cloud) {
+        myToday = { date: dateStr, score: cloud.score, maxScore: cloud.max_score };
+        saveDailyChallengeLocal(dateStr, cloud.score, cloud.max_score);
+      }
+    }
+
+    if (myToday) {
+      const pct = Math.round((myToday.score / myToday.maxScore) * 100);
+      status.innerHTML = `✅ 今日已完成 · <b>${myToday.score} / ${myToday.maxScore}</b> 分（${pct}%）`;
+      status.classList.add('done');
+      btn.textContent = '再挑戰一次（覆蓋分數）';
+    } else {
+      status.innerHTML = '尚未挑戰　·　完成可上傳到排行榜';
+      status.classList.remove('done');
+      btn.textContent = '開始今日挑戰';
+    }
+  }
+
+  // ============================================================
+  // ====                   排行榜（Leaderboard）             ====
+  // ============================================================
+  let lbCache = null;
+  let lbCurrentTab = 'total';
+
+  async function renderLeaderboard(forceRefresh) {
+    const tbody = $('lb-tbody');
+    const loading = $('lb-loading');
+    const empty = $('lb-empty');
+    const need = $('lb-need-login');
+    const wrap = document.querySelector('.lb-table-wrap');
+    if (!tbody) return;
+
+    if (!window.AuthState || !window.AuthState.user) {
+      need.classList.remove('hidden');
+      wrap.classList.add('hidden');
+      loading.classList.add('hidden');
+      empty.classList.add('hidden');
+      tbody.innerHTML = '';
+      return;
+    }
+    need.classList.add('hidden');
+    wrap.classList.remove('hidden');
+
+    if (!lbCache || forceRefresh) {
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      tbody.innerHTML = '';
+      try {
+        lbCache = await window.AuthState.fetchLeaderboard();
+      } catch (e) {
+        lbCache = [];
+        showToast('載入排行榜失敗', 'error');
+      }
+      loading.classList.add('hidden');
+    }
+
+    const rows = lbCache.slice();
+    if (lbCurrentTab === 'total') rows.sort((a, b) => b.total_score - a.total_score);
+    else if (lbCurrentTab === 'week') rows.sort((a, b) => b.week_score - a.week_score);
+    else if (lbCurrentTab === 'today') rows.sort((a, b) => b.today_score - a.today_score);
+
+    // 今日 tab 過濾掉 today_score == 0
+    const filtered = lbCurrentTab === 'today'
+      ? rows.filter(r => r.today_score > 0)
+      : rows;
+
+    if (!filtered.length) {
+      empty.classList.remove('hidden');
+      tbody.innerHTML = '';
+      return;
+    }
+    empty.classList.add('hidden');
+
+    const myId = window.AuthState.user.id;
+    tbody.innerHTML = filtered.map((r, i) => {
+      const isMe = r.user_id === myId;
+      let scoreVal;
+      if (lbCurrentTab === 'total') scoreVal = r.total_score;
+      else if (lbCurrentTab === 'week') scoreVal = r.week_score;
+      else scoreVal = r.today_score;
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+      const name = escapeHtml(r.display_name || '匿名玩家');
+      return `
+        <tr class="${isMe ? 'lb-me' : ''}">
+          <td class="lb-rank">${medal}</td>
+          <td>${name}${isMe ? ' <span class="lb-me-tag">你</span>' : ''}</td>
+          <td class="lb-score"><b>${scoreVal}</b></td>
+          <td class="lb-extra">${r.best_score} / ${r.days_played} 天</td>
+          <td class="lb-extra">${r.last_played || '—'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // 更新欄標題
+    const header = $('lb-score-header');
+    if (header) {
+      header.textContent = lbCurrentTab === 'total' ? '總分'
+        : lbCurrentTab === 'week' ? '本週分' : '今日分';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
   }
 
   // ---- 事件綁定 ----
@@ -1546,6 +1748,25 @@
     // 今日推薦：一鍵開始
     const btnDaily = $('btn-start-daily');
     if (btnDaily) btnDaily.addEventListener('click', startDailyRecommendation);
+
+    // 每日挑戰
+    const dcStart = $('dc-start-btn');
+    if (dcStart) dcStart.addEventListener('click', startDailyChallenge);
+    const dcLb = $('dc-leaderboard-btn');
+    if (dcLb) dcLb.addEventListener('click', () => showPage('leaderboard'));
+
+    // 排行榜：分頁切換 / 重新整理 / 登入按鈕
+    $$('.lb-tab').forEach(t => {
+      t.addEventListener('click', () => {
+        lbCurrentTab = t.dataset.lbTab;
+        $$('.lb-tab').forEach(x => x.classList.toggle('active', x === t));
+        renderLeaderboard();
+      });
+    });
+    const lbR = $('lb-refresh');
+    if (lbR) lbR.addEventListener('click', () => renderLeaderboard(true));
+    const lbLogin = $('lb-login-btn');
+    if (lbLogin) lbLogin.addEventListener('click', () => $('auth-signin-btn').click());
   }
 
   // ---- 初始化 ----
@@ -1649,6 +1870,11 @@
           renderHomeStats();
           renderUserDropdownEstimate();
           if (state.currentPage === 'review') renderReview();
+          if (state.currentPage === 'quiz') renderDailyChallengeCard();
+          if (state.currentPage === 'leaderboard') {
+            lbCache = null;
+            renderLeaderboard();
+          }
           updateSyncStatus('synced');
         } catch (e) {
           console.error('同步失敗', e);

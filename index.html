@@ -46,6 +46,7 @@
         <button class="nav-btn" data-page="grammar">文法</button>
         <button class="nav-btn" data-page="review">複習</button>
         <button class="nav-btn" data-page="quiz">測驗</button>
+        <button class="nav-btn" data-page="leaderboard">🏆 排行榜</button>
       </nav>
       <label class="romaji-toggle">
         <input type="checkbox" id="romaji-toggle" checked>
@@ -269,6 +270,17 @@
     <section class="page hidden" id="page-quiz">
       <h2 class="page-title">測驗</h2>
       <div class="quiz-setup" id="quiz-setup">
+        <div class="daily-challenge-card" id="daily-challenge-card">
+          <div class="dc-head">
+            <h3>🌟 每日挑戰</h3>
+            <span class="dc-date" id="dc-date"></span>
+          </div>
+          <p class="dc-desc">全網用戶當天<b>同一份題</b>（10 題、橫跨 N5–N1），登入後分數會上傳到排行榜。</p>
+          <div class="dc-status" id="dc-status"></div>
+          <button class="dc-start-btn" id="dc-start-btn">開始今日挑戰</button>
+          <button class="dc-leaderboard-btn" id="dc-leaderboard-btn">看排行榜 →</button>
+        </div>
+
         <button class="quiz-type quiz-type-mock" data-type="jlpt-mock">
           📝 JLPT 模擬試卷
           <span class="quiz-type-desc">綜合題型，按 JLPT 比例自動產卷</span>
@@ -345,6 +357,40 @@
         <div class="quiz-review" id="quiz-review"></div>
         <button class="quiz-restart" id="quiz-restart">再測一次</button>
       </div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section class="page hidden" id="page-leaderboard">
+      <h2 class="page-title">🏆 排行榜</h2>
+      <p class="lb-intro">分數來自每日挑戰累積。每天登入完成挑戰，就會出現在這裡。</p>
+
+      <div class="lb-tabs" id="lb-tabs">
+        <button class="lb-tab active" data-lb-tab="total">總分</button>
+        <button class="lb-tab" data-lb-tab="week">本週</button>
+        <button class="lb-tab" data-lb-tab="today">今日</button>
+      </div>
+
+      <div class="lb-need-login hidden" id="lb-need-login">
+        登入後才能看到排行榜（並提交分數）。<button class="lb-login-btn" id="lb-login-btn">立刻登入</button>
+      </div>
+
+      <div class="lb-loading hidden" id="lb-loading">載入中…</div>
+      <div class="lb-empty hidden" id="lb-empty">還沒有人完成挑戰，當第一個吧！</div>
+      <div class="lb-table-wrap">
+        <table class="lb-table" id="lb-table">
+          <thead>
+            <tr>
+              <th class="lb-rank">#</th>
+              <th>暱稱</th>
+              <th class="lb-score" id="lb-score-header">總分</th>
+              <th class="lb-extra">最佳單日 / 連戰</th>
+              <th class="lb-extra">最後遊玩</th>
+            </tr>
+          </thead>
+          <tbody id="lb-tbody"></tbody>
+        </table>
+      </div>
+      <button class="lb-refresh" id="lb-refresh">🔄 重新整理</button>
     </section>
   </main>
 
@@ -453,6 +499,7 @@
   <script src="js/vocab.js"></script>
   <script src="js/grammar.js"></script>
   <script src="js/grammar-tags.js"></script>
+  <script src="js/daily-challenge.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

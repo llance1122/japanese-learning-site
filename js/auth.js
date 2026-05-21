@@ -136,6 +136,48 @@
         progress
       }, { onConflict: 'user_id' });
       if (error) console.error('flush error', error);
+    },
+
+    // ---- 每日挑戰 / 排行榜 ----
+
+    // 提交今天的挑戰分數（upsert，同日重交以新分覆蓋）
+    async submitDailyScore(date, score, maxScore) {
+      if (!this.user) throw new Error('未登入');
+      const { error } = await sb.from('daily_challenges').upsert({
+        user_id: this.user.id,
+        date,
+        score,
+        max_score: maxScore,
+        completed_at: new Date().toISOString()
+      }, { onConflict: 'user_id,date' });
+      if (error) throw error;
+    },
+
+    // 查自己當天是否已完成
+    async fetchMyDailyScore(date) {
+      if (!this.user) return null;
+      const { data, error } = await sb.from('daily_challenges')
+        .select('score, max_score, completed_at')
+        .eq('user_id', this.user.id)
+        .eq('date', date)
+        .maybeSingle();
+      if (error) {
+        console.error('fetchMyDailyScore error', error);
+        return null;
+      }
+      return data;
+    },
+
+    // 拉排行榜（leaderboard view 已彙總總分/週分/今日分/最後遊玩日）
+    async fetchLeaderboard() {
+      const { data, error } = await sb.from('leaderboard')
+        .select('*')
+        .order('total_score', { ascending: false });
+      if (error) {
+        console.error('fetchLeaderboard error', error);
+        return [];
+      }
+      return data || [];
     }
   };
 
