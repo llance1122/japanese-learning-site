@@ -6,7 +6,7 @@
 //  - Supabase API：network only（不能離線改帳號或同步）
 //  - 其他第三方（jsdelivr）：cache-first
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `jp-learn-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -23,6 +23,8 @@ const PRECACHE_URLS = [
   './js/vocab.js',
   './js/grammar.js',
   './js/grammar-tags.js',
+  './js/verb-conjugation.js',
+  './js/text-analyzer.js',
   './js/daily-challenge.js',
   './js/app.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'

@@ -46,6 +46,7 @@
         <button class="nav-btn" data-page="grammar">文法</button>
         <button class="nav-btn" data-page="review">複習</button>
         <button class="nav-btn" data-page="quiz">測驗</button>
+        <button class="nav-btn" data-page="tool">📖 文章查字</button>
         <button class="nav-btn" data-page="leaderboard">🏆 排行榜</button>
       </nav>
       <label class="romaji-toggle">
@@ -317,6 +318,12 @@
             <button class="quiz-type" data-type="grammar">文法選擇</button>
           </div>
         </div>
+        <div class="quiz-section-group">
+          <div class="quiz-section-label">動詞變化</div>
+          <div class="quiz-types">
+            <button class="quiz-type" data-type="verb-conjugation">動詞變化練習（ます／ない／た／て…）</button>
+          </div>
+        </div>
         <div class="quiz-config">
           <label>等級：
             <select id="quiz-level">
@@ -356,6 +363,36 @@
         <div class="quiz-score" id="quiz-score"></div>
         <div class="quiz-review" id="quiz-review"></div>
         <button class="quiz-restart" id="quiz-restart">再測一次</button>
+      </div>
+    </section>
+
+    <!-- TOOL: 文章查字 -->
+    <section class="page hidden" id="page-tool">
+      <h2 class="page-title">📖 文章查字工具</h2>
+      <p class="tool-intro">把日文文章貼進去，工具會自動斷詞 → 在你的字庫中找對應的單字（含動詞／い形容詞變化）、標出未學的詞。</p>
+
+      <textarea id="tool-input" class="tool-input" rows="6" placeholder="貼日文文章…&#10;例：今日は学校で友達と一緒に勉強しました。"></textarea>
+      <div class="tool-controls">
+        <button class="tool-analyze-btn" id="tool-analyze-btn">分析</button>
+        <button class="tool-clear-btn" id="tool-clear-btn">清空</button>
+        <label class="tool-sample-pick">
+          範例：
+          <select id="tool-sample-select">
+            <option value="">—</option>
+            <option value="今日は学校で友達と一緒にお弁当を食べました。">N5 句型</option>
+            <option value="昨日映画を見に行きました。とても面白かったです。">N5 過去式</option>
+            <option value="日本語を勉強しています。読んでいる本があります。">N4 持續式</option>
+            <option value="先生に教えていただいた本は、思っていたよりずっと面白かった。">N3 複合</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="tool-stats hidden" id="tool-stats"></div>
+      <div class="tool-result" id="tool-result"></div>
+
+      <div class="tool-popup hidden" id="tool-popup">
+        <button class="tool-popup-close" id="tool-popup-close" aria-label="關閉">×</button>
+        <div class="tool-popup-body" id="tool-popup-body"></div>
       </div>
     </section>
 
@@ -499,6 +536,8 @@
   <script src="js/vocab.js"></script>
   <script src="js/grammar.js"></script>
   <script src="js/grammar-tags.js"></script>
+  <script src="js/verb-conjugation.js"></script>
+  <script src="js/text-analyzer.js"></script>
   <script src="js/daily-challenge.js"></script>
   <script src="js/app.js"></script>
 </body>

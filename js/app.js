@@ -634,6 +634,7 @@
     if (name === 'review') renderReview();
     if (name === 'quiz') renderDailyChallengeCard();
     if (name === 'leaderboard') renderLeaderboard();
+    if (name === 'tool') initTextTool();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1160,6 +1161,8 @@
       );
     } else if (type === 'grammar') {
       pool = GRAMMAR_DATA.filter(g => lvl === 'all' || g.level === lvl);
+    } else if (type === 'verb-conjugation') {
+      pool = window.VerbConj ? window.VerbConj.getVerbPool(lvl) : [];
     } else if (type === 'jlpt-mock') {
       return startMockExam(lvl, count);
     } else {
@@ -1322,6 +1325,32 @@
       correct = target.short;
       const distractors = randomPick(pool.filter(p => p.short !== correct), 3).map(p => p.short);
       options = shuffle([correct, ...distractors]);
+    } else if (type === 'verb-conjugation') {
+      // 隨機挑一個變化形
+      const forms = window.VerbConj.FORMS;
+      const form = forms[Math.floor(Math.random() * forms.length)];
+      const correctConj = window.VerbConj.conjugate(target, form.key);
+      if (!correctConj) {
+        // 萬一這個動詞處理不了，fallback 換成日中
+        return buildQuestion('vocab-jp-to-cn', target, pool);
+      }
+      question = {
+        prompt: `將「${target.jp}（${target.kana}）」變化為 ${form.label}`,
+        content: target.cn,
+        small: true
+      };
+      correct = correctConj.kana;
+      // distractors：拿其他變化形當干擾
+      const distrSet = new Set();
+      for (const f of forms) {
+        if (f.key === form.key) continue;
+        const c = window.VerbConj.conjugate(target, f.key);
+        if (c && c.kana !== correct) distrSet.add(c.kana);
+      }
+      const distractors = shuffle([...distrSet]).slice(0, 3);
+      options = shuffle([correct, ...distractors]);
+      // 把 form 資訊塞進 question 給 review 用
+      question.formLabel = form.label;
     }
     return { question, correct, options, target, itemKey: getItemKey(type, target), type };
   }
@@ -1650,6 +1679,134 @@
     return String(s).replace(/[&<>"']/g, c => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
+  }
+
+  // ============================================================
+  // ====               文章查字工具（Text Analyzer）          ====
+  // ============================================================
+  let toolInited = false;
+  function initTextTool() {
+    if (toolInited) return;
+    toolInited = true;
+    const input = $('tool-input');
+    $('tool-analyze-btn').addEventListener('click', () => analyzeText(input.value));
+    $('tool-clear-btn').addEventListener('click', () => {
+      input.value = '';
+      $('tool-result').innerHTML = '';
+      $('tool-stats').classList.add('hidden');
+    });
+    $('tool-sample-select').addEventListener('change', e => {
+      if (e.target.value) {
+        input.value = e.target.value;
+        analyzeText(e.target.value);
+      }
+    });
+    // popup 關閉
+    $('tool-popup-close').addEventListener('click', () => $('tool-popup').classList.add('hidden'));
+    $('tool-result').addEventListener('click', e => {
+      const tok = e.target.closest('.tok-vocab');
+      if (!tok) return;
+      const jp = tok.dataset.jp;
+      const cn = tok.dataset.cn;
+      const kana = tok.dataset.kana;
+      const lvl = tok.dataset.level;
+      const itemKey = tok.dataset.key;
+      const srs = progress.srs[itemKey];
+      const inFav = (progress.favorites || []).includes(itemKey);
+      const body = $('tool-popup-body');
+      body.innerHTML = `
+        <div class="popup-jp">${escapeHtml(jp)}<span class="popup-lvl">${lvl}</span></div>
+        <div class="popup-kana">${escapeHtml(kana)}</div>
+        <div class="popup-cn">${escapeHtml(cn)}</div>
+        <div class="popup-srs">${
+          srs ? `SRS Lv ${srs.level || 0}（答對 ${srs.correct || 0} 次 / 答錯 ${srs.wrong || 0} 次）`
+              : '未學'
+        }</div>
+        <div class="popup-actions">
+          <button class="popup-btn" data-act="speak">🔊 聽發音</button>
+          <button class="popup-btn" data-act="fav">${inFav ? '★ 已收藏' : '☆ 加入收藏'}</button>
+        </div>
+      `;
+      body.querySelector('[data-act="speak"]').addEventListener('click', () => speak(kana, 'ja-JP'));
+      body.querySelector('[data-act="fav"]').addEventListener('click', () => {
+        toggleFavorite(itemKey);
+        showToast(inFav ? '已從收藏移除' : '已加入收藏', 'success', 2000);
+        $('tool-popup').classList.add('hidden');
+      });
+      $('tool-popup').classList.remove('hidden');
+    });
+  }
+
+  function analyzeText(text) {
+    if (!text || !text.trim()) {
+      $('tool-result').innerHTML = '<div class="tool-empty">請先貼或輸入日文…</div>';
+      $('tool-stats').classList.add('hidden');
+      return;
+    }
+    if (!window.TextAnalyzer) {
+      $('tool-result').innerHTML = '<div class="tool-empty">分析引擎未載入</div>';
+      return;
+    }
+    const tokens = window.TextAnalyzer.analyze(text);
+    const st = window.TextAnalyzer.stats(tokens);
+
+    // 統計：根據 SRS 標 已熟 / 學過 / 未學
+    let mastered = 0, learning = 0, fresh = 0;
+    for (const t of tokens) {
+      if (t.type !== 'vocab') continue;
+      const key = getItemKey(t.vocab.cat === '動詞' ? 'vocab-jp-to-cn' : 'vocab-jp-to-cn', t.vocab);
+      const srs = progress.srs[key];
+      if (!srs) fresh++;
+      else if ((srs.level || 0) >= 3) mastered++;
+      else learning++;
+    }
+
+    const statsEl = $('tool-stats');
+    statsEl.innerHTML = `
+      <span class="stat-chip stat-mastered">✓ 已熟 ${mastered}</span>
+      <span class="stat-chip stat-learning">…學習中 ${learning}</span>
+      <span class="stat-chip stat-fresh">新詞 ${fresh}</span>
+      <span class="stat-chip stat-unknown">未識別 ${st.unknown}</span>
+      <span class="stat-chip">N5 ${st.byLevel.N5}　N4 ${st.byLevel.N4}　N3 ${st.byLevel.N3}　N2 ${st.byLevel.N2}　N1 ${st.byLevel.N1}</span>
+    `;
+    statsEl.classList.remove('hidden');
+
+    const html = tokens.map(t => {
+      if (t.type === 'punct') {
+        return /\n/.test(t.surface) ? '<br>' : escapeHtml(t.surface);
+      }
+      if (t.type === 'particle') {
+        return `<span class="tok-particle">${escapeHtml(t.surface)}</span>`;
+      }
+      if (t.type === 'unknown') {
+        return `<span class="tok-unknown">${escapeHtml(t.surface)}</span>`;
+      }
+      if (t.type === 'other') {
+        return escapeHtml(t.surface);
+      }
+      const v = t.vocab;
+      const key = getItemKey('vocab-jp-to-cn', v);
+      const srs = progress.srs[key];
+      let cls = 'tok-fresh';
+      if (srs && (srs.level || 0) >= 3) cls = 'tok-mastered';
+      else if (srs) cls = 'tok-learning';
+      return `<span class="tok-vocab ${cls}"
+        data-jp="${escapeHtml(v.jp)}"
+        data-kana="${escapeHtml(v.kana)}"
+        data-cn="${escapeHtml(v.cn)}"
+        data-level="${v.level}"
+        data-key="${escapeHtml(key)}"
+        title="${escapeHtml(v.cn)} (${v.level})">${escapeHtml(t.surface)}</span>`;
+    }).join('');
+    $('tool-result').innerHTML = html;
+  }
+
+  function toggleFavorite(key) {
+    progress.favorites = progress.favorites || [];
+    const idx = progress.favorites.indexOf(key);
+    if (idx >= 0) progress.favorites.splice(idx, 1);
+    else progress.favorites.push(key);
+    saveProgress();
   }
 
   // ---- 事件綁定 ----

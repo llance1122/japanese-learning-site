@@ -416,7 +416,8 @@ JSON.parse(localStorage.getItem('jp-learn-progress'))
 1. 重組句 / 並べ替え（JLPT 真實題型）
 2. 成就 / 徽章系統
 3. 計時 JLPT 模擬卷
-4. 文章查字工具（貼日文 → 標已學 / 未學）
-5. 手寫筆順練習（Canvas + KanjiVG 資料）
-6. 進度匯出／匯入 JSON
-7. Quiz 答對時的音效 / 動畫
+4. 手寫筆順練習（Canvas + KanjiVG 資料）
+5. 進度匯出／匯入 JSON
+6. Quiz 答對時的音效 / 動畫
+7. 文章查字引擎升級（kuromoji.js 真正分詞、目前是 longest-prefix + 變化形延伸）
+8. い形容詞 / な形容詞變化練習題型
