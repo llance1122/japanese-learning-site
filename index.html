@@ -29,6 +29,39 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- ===== 開場刀斬動畫 ===== -->
+  <div class="intro-splash" id="intro-splash" aria-hidden="true">
+    <!-- 兩個一樣的紅底，用 clip-path 切上下兩半 -->
+    <div class="intro-half intro-half-top">
+      <div class="intro-brand-wrap">
+        <span class="intro-brand">日本語</span>
+        <span class="intro-brand-sub">スタート</span>
+      </div>
+    </div>
+    <div class="intro-half intro-half-bottom">
+      <div class="intro-brand-wrap">
+        <span class="intro-brand">日本語</span>
+        <span class="intro-brand-sub">スタート</span>
+      </div>
+    </div>
+    <!-- 三條速度線（在主刀光之前先掠過） -->
+    <div class="intro-speed intro-speed-1"></div>
+    <div class="intro-speed intro-speed-2"></div>
+    <div class="intro-speed intro-speed-3"></div>
+    <!-- 主刀光 -->
+    <div class="intro-slash"></div>
+    <!-- 刀光餘暉（殘留發光） -->
+    <div class="intro-glow"></div>
+    <!-- 白色閃光 frame -->
+    <div class="intro-flash"></div>
+    <!-- 刀擊瞬間爆出櫻花花瓣（JS 注入） -->
+    <div class="intro-burst" id="intro-burst"></div>
+    <button class="intro-skip" id="intro-skip" type="button">略過 ▷</button>
+  </div>
+
+  <!-- ===== 永久背景櫻花飄落層 ===== -->
+  <div class="sakura-layer" id="sakura-layer" aria-hidden="true"></div>
+
   <!-- 全站 Toast 通知（驗證成功等） -->
   <div class="toast hidden" id="toast" role="status" aria-live="polite">
     <span class="toast-icon" id="toast-icon">✓</span>

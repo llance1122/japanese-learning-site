@@ -2069,4 +2069,286 @@ html[data-theme="dark"] .upgrade-text b { color: #ffce6a; }
   .dc-head h3 { font-size: 18px; }
 }
 
+/* ============================================================
+   開場刀斬動畫（intro splash）— 動畫風刀斬
+   時序：
+     0       splash 出現（紅底）
+     0.2s    日本語 文字 zoom-in
+     0.6s    スタート 副標 fade-in
+     0.9s    3 條速度線快速掠過（先聲奪人）
+     1.0s    💥 主刀光劃過 + 白色閃光 + 螢幕震動 + 花瓣噴爆
+     1.3s    刀光餘暉淡出、畫面沿刀光裂成兩半向兩極甩飛（帶輕微旋轉）
+     2.0s    splash 整體 fade-out
+     2.4s    DOM 移除（JS 控制）
+   ============================================================ */
+.intro-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: auto;
+  overflow: hidden;
+  animation: introShake 0.4s linear 1.0s;
+}
+.intro-splash.intro-skip-now,
+.intro-splash.intro-done {
+  animation: introFadeOut 0.4s ease-out forwards;
+}
+@keyframes introFadeOut { to { opacity: 0; visibility: hidden; } }
+@keyframes introShake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-5px, 3px); }
+  30% { transform: translate(6px, -4px); }
+  45% { transform: translate(-4px, 5px); }
+  60% { transform: translate(5px, -2px); }
+  75% { transform: translate(-3px, 3px); }
+  90% { transform: translate(2px, -1px); }
+}
+
+/* 兩半紅底：clip-path 沿著刀光對角線切，甩飛時帶旋轉 */
+.intro-half {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 40%, #ea5d5d 0%, #d64545 45%, #8a1f1f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+  transform-origin: center;
+}
+.intro-half-top {
+  clip-path: polygon(0 0, 100% 0, 100% 36%, 0 64%);
+  animation: introSlideTop 0.85s cubic-bezier(.5,.05,.85,.3) 1.3s forwards;
+}
+.intro-half-bottom {
+  clip-path: polygon(0 64%, 100% 36%, 100% 100%, 0 100%);
+  animation: introSlideBottom 0.85s cubic-bezier(.5,.05,.85,.3) 1.3s forwards;
+}
+@keyframes introSlideTop {
+  to { transform: translate(-18vw, -125vh) rotate(-9deg); opacity: 0; }
+}
+@keyframes introSlideBottom {
+  to { transform: translate(18vw, 125vh) rotate(-9deg); opacity: 0; }
+}
+
+/* 品牌字 */
+.intro-brand-wrap {
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255,255,255,0.15);
+  user-select: none;
+}
+.intro-brand {
+  display: block;
+  font-size: clamp(64px, 14vw, 180px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transform: scale(0.6);
+  animation: introBrandIn 0.6s cubic-bezier(.2,.7,.3,1.2) 0.2s forwards;
+}
+.intro-brand-sub {
+  display: block;
+  font-size: clamp(18px, 3.2vw, 38px);
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  margin-top: 12px;
+  padding-left: 0.35em;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: introSubIn 0.5s ease-out 0.6s forwards;
+}
+@keyframes introBrandIn { to { opacity: 1; transform: scale(1); } }
+@keyframes introSubIn   { to { opacity: 0.9; transform: translateY(0); } }
+
+/* 速度線：細、半透明、在主刀光之前先掠過、稍微錯位 */
+.intro-speed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 130vw;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 50%, transparent 100%);
+  transform: translate(-150%, -50%) rotate(-22deg);
+  opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.5));
+  pointer-events: none;
+}
+.intro-speed-1 { margin-top: -50px; animation: introSpeed 0.45s ease-out 0.85s forwards; }
+.intro-speed-2 { margin-top: -20px; animation: introSpeed 0.45s ease-out 0.92s forwards; }
+.intro-speed-3 { margin-top:  40px; animation: introSpeed 0.45s ease-out 0.78s forwards; }
+@keyframes introSpeed {
+  0%   { transform: translate(-150%, -50%) rotate(-22deg); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translate(50%, -50%) rotate(-22deg); opacity: 0; }
+}
+
+/* 主刀光：粗、明亮、超強發光 */
+.intro-slash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140vw;
+  height: 10px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,240,240,0.7) 15%,
+    #fff 38%, #fff 62%,
+    rgba(255,240,240,0.7) 85%,
+    transparent 100%);
+  transform: translate(-140%, -50%) rotate(-22deg);
+  opacity: 0;
+  filter: drop-shadow(0 0 8px #fff)
+          drop-shadow(0 0 20px rgba(255,200,200,0.95))
+          drop-shadow(0 0 50px rgba(255,90,90,0.6));
+  animation: introSlash 0.35s cubic-bezier(.2,.05,.2,1) 1.0s forwards;
+  pointer-events: none;
+}
+@keyframes introSlash {
+  0%   { transform: translate(-140%, -50%) rotate(-22deg); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translate(40%, -50%) rotate(-22deg); opacity: 0; }
+}
+
+/* 刀光餘暉：劃過後沿原路徑殘留發光，慢慢淡出 */
+.intro-glow {
+  position: absolute;
+  top: 50%;
+  left: -10vw;
+  width: 120vw;
+  height: 24px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.3) 20%,
+    rgba(255,255,255,0.5) 50%,
+    rgba(255,255,255,0.3) 80%,
+    transparent 100%);
+  transform: translateY(-50%) rotate(-22deg);
+  opacity: 0;
+  filter: blur(8px);
+  animation: introGlow 0.9s ease-out 1.15s forwards;
+  pointer-events: none;
+}
+@keyframes introGlow {
+  0%   { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* 白色閃光：刀擊瞬間整個畫面爆白 */
+.intro-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: introFlash 0.35s ease-out 1.05s forwards;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+@keyframes introFlash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 花瓣噴爆容器 */
+.intro-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  z-index: 10;
+}
+.intro-petal {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: -9px;
+  top: -9px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23ffe8ee'/><stop offset='100%' stop-color='%23ff8fa8'/></linearGradient></defs><path d='M12 2 C 7 5 4 12 6 20 Q 12 17 18 20 C 20 12 17 5 12 2 Z' fill='url(%23g)' stroke='%23ff7090' stroke-width='0.4'/></svg>");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0;
+  filter: drop-shadow(0 2px 4px rgba(255,140,170,0.5));
+  animation: introPetalBurst 1.6s cubic-bezier(.25,.85,.5,1) forwards;
+  transform-origin: center;
+}
+@keyframes introPetalBurst {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx,0), var(--dy,0)) rotate(var(--rot,720deg)) scale(1); }
+}
+
+/* 略過按鈕 */
+.intro-skip {
+  position: absolute;
+  bottom: 28px;
+  right: 28px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  opacity: 0;
+  animation: introSkipIn 0.4s ease-out 0.5s forwards;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.intro-skip:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+@keyframes introSkipIn { to { opacity: 0.85; } }
+
+/* ============================================================
+   永久背景櫻花飄落
+   ============================================================ */
+.sakura-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.sakura-petal {
+  position: absolute;
+  top: -40px;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23ffe8ee'/><stop offset='100%' stop-color='%23ffb7c5'/></linearGradient></defs><path d='M12 2 C 7 5 4 12 6 20 Q 12 17 18 20 C 20 12 17 5 12 2 Z' fill='url(%23g)'/></svg>");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.7;
+  will-change: transform;
+  animation: sakuraFall var(--dur, 18s) linear var(--delay, 0s) infinite;
+}
+.sakura-petal::before {
+  /* 用 child wrap 做左右搖擺，但 CSS only 沒辦法雙層 animate 同一 element，
+     改用 transform 包含搖擺成分（sin-like 透過 keyframes 模擬）*/
+}
+@keyframes sakuraFall {
+  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); }
+  25%  { transform: translate3d(40px, 25vh, 0) rotate(180deg); }
+  50%  { transform: translate3d(-30px, 50vh, 0) rotate(360deg); }
+  75%  { transform: translate3d(35px, 75vh, 0) rotate(540deg); }
+  100% { transform: translate3d(-20px, 110vh, 0) rotate(720deg); }
+}
+/* 深色主題下櫻花稍微淡一點不刺眼 */
+[data-theme="dark"] .sakura-petal { opacity: 0.55; filter: brightness(0.9); }
+
+/* 尊重 prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .intro-splash { display: none !important; }
+  .sakura-layer { display: none !important; }
+}
+
+/* 手機微調 */
+@media (max-width: 720px) {
+  .intro-brand { font-size: 18vw; }
+  .intro-brand-sub { font-size: 4.2vw; letter-spacing: 0.3em; }
+  .intro-skip { bottom: 20px; right: 16px; padding: 7px 14px; font-size: 12px; }
+  .sakura-petal { width: 14px; height: 14px; }
+}
 

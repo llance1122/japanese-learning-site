@@ -1797,8 +1797,97 @@
     if (lbLogin) lbLogin.addEventListener('click', () => $('auth-signin-btn').click());
   }
 
+  // ---- 開場刀斬動畫 ----
+  function initIntro() {
+    const splash = document.getElementById('intro-splash');
+    if (!splash) return;
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      splash.remove();
+      return;
+    }
+    let seen = false;
+    try { seen = sessionStorage.getItem('jp-learn-intro-seen') === '1'; } catch (e) {}
+    if (seen) {
+      splash.remove();
+      return;
+    }
+    try { sessionStorage.setItem('jp-learn-intro-seen', '1'); } catch (e) {}
+
+    const skip = () => {
+      splash.classList.add('intro-skip-now');
+      setTimeout(() => splash.remove(), 450);
+    };
+    const skipBtn = document.getElementById('intro-skip');
+    if (skipBtn) skipBtn.addEventListener('click', skip);
+
+    // 在刀擊瞬間（1.0s）噴出花瓣
+    setTimeout(spawnIntroBurst, 1000);
+
+    // 動畫總長 ~2.0s + fade 0.4s → 2.4s 後移除
+    setTimeout(() => {
+      splash.classList.add('intro-done');
+      setTimeout(() => splash.remove(), 450);
+    }, 2000);
+  }
+
+  // 刀擊瞬間從畫面中心噴出花瓣（沿著刀光方向偏多）
+  function spawnIntroBurst() {
+    const burst = document.getElementById('intro-burst');
+    if (!burst) return;
+    const COUNT = 28;
+    for (let i = 0; i < COUNT; i++) {
+      const p = document.createElement('div');
+      p.className = 'intro-petal';
+      // 角度偏向刀光方向（-22deg ≈ 沿著對角）
+      // 一半往右上、一半往左下、加些散射
+      const baseAngle = (i % 2 === 0 ? -22 : 158) + (Math.random() * 80 - 40);
+      const dist = 200 + Math.random() * 500;
+      const rad = baseAngle * Math.PI / 180;
+      const dx = Math.cos(rad) * dist;
+      const dy = Math.sin(rad) * dist;
+      p.style.setProperty('--dx', dx + 'px');
+      p.style.setProperty('--dy', dy + 'px');
+      p.style.setProperty('--rot', (Math.random() * 1440 - 720) + 'deg');
+      p.style.animationDelay = (Math.random() * 0.15) + 's';
+      const sz = 12 + Math.random() * 14;
+      p.style.width = sz + 'px';
+      p.style.height = sz + 'px';
+      p.style.left = (-sz / 2) + 'px';
+      p.style.top = (-sz / 2) + 'px';
+      burst.appendChild(p);
+    }
+  }
+
+  // ---- 永久背景櫻花飄落 ----
+  function initSakura() {
+    const layer = document.getElementById('sakura-layer');
+    if (!layer) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // 手機減量
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    const COUNT = isMobile ? 8 : 16;
+    for (let i = 0; i < COUNT; i++) spawnSakura(layer, i);
+  }
+  function spawnSakura(layer, idx) {
+    const p = document.createElement('div');
+    p.className = 'sakura-petal';
+    const sz = 10 + Math.random() * 12;
+    p.style.width = sz + 'px';
+    p.style.height = sz + 'px';
+    p.style.left = (Math.random() * 100) + 'vw';
+    // 持續時間 12~22s
+    p.style.setProperty('--dur', (12 + Math.random() * 10) + 's');
+    // 起始偏移 0 ~ -20s，讓 N 朵花瓣分散在不同時間點
+    p.style.setProperty('--delay', (-Math.random() * 20) + 's');
+    p.style.opacity = (0.35 + Math.random() * 0.45).toFixed(2);
+    layer.appendChild(p);
+  }
+
   // ---- 初始化 ----
   function init() {
+    initIntro();
+    initSakura();
     initTheme();
     loadProgress();
     bindEvents();
