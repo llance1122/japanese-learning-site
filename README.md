@@ -109,7 +109,10 @@ japanese-learning-site/
 ├── README.md                  ← 本文件
 ├── index.html                 ← 單頁應用骨架（6 個 section + 2 個 modal + 回頂端按鈕）
 ├── styles.css                 ← 全部樣式（深淺色 CSS 變數、響應式）
-├── favicon.svg                ← 紅圓底 + あ
+├── icons/
+│   ├── favicon.svg            ← 紅圓底 + あ（瀏覽器分頁圖示）
+│   ├── icon-192.png           ← PWA 192×192（紅底白「日」）
+│   └── icon-512.png           ← PWA 512×512
 ├── manifest.json              ← PWA Web App Manifest（加入主畫面用）
 ├── service-worker.js          ← PWA Service Worker（離線快取 + 自動更新）
 ├── tests/
