@@ -775,6 +775,7 @@ html[data-theme="dark"] .theme-toggle .thumb {
   border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
 }
 .quiz-next:hover, .quiz-restart:hover { background: var(--accent-dark); }
 .quiz-quit {
@@ -785,7 +786,27 @@ html[data-theme="dark"] .theme-toggle .thumb {
   color: var(--text-soft);
   font-size: 13px;
   margin-left: 12px;
+  cursor: pointer;
 }
+.quiz-result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.quiz-back {
+  background: transparent;
+  color: var(--text-soft);
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.quiz-back:hover { border-color: var(--accent); color: var(--accent); }
 
 .quiz-result {
   text-align: center;

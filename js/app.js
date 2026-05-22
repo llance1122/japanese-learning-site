@@ -1176,16 +1176,17 @@
     const questionCount = Math.min(count, pool.length);
     const questions = randomPick(pool, questionCount).map(q => buildQuestion(type, q, pool));
 
-    launchQuiz(type, questions);
+    launchQuiz(type, questions, () => startQuiz(type));
   }
 
-  function launchQuiz(type, questions) {
+  function launchQuiz(type, questions, restartFn) {
     state.quiz = {
       type,
       questions,
       currentIdx: 0,
       correctCount: 0,
-      answers: []
+      answers: [],
+      restart: restartFn || null
     };
     showPage('quiz');
     $('quiz-setup').classList.add('hidden');
@@ -1259,7 +1260,7 @@
       alert('產題失敗');
       return;
     }
-    launchQuiz('jlpt-mock', shuffled);
+    launchQuiz('jlpt-mock', shuffled, () => startMockExam(level, totalCount));
   }
 
   function startReviewSession(mode) {
@@ -1272,7 +1273,7 @@
     if (!keys.length) return;
     const questions = buildReviewQuestions(keys, 30);
     if (!questions.length) return;
-    launchQuiz('review-' + mode, questions);
+    launchQuiz('review-' + mode, questions, () => startReviewSession(mode));
   }
 
   function buildQuestion(type, target, pool) {
@@ -1499,6 +1500,16 @@
     renderDailyChallengeCard();
   }
 
+  // 用同樣的設定再跑一次 quiz
+  function restartQuiz() {
+    const fn = state.quiz && state.quiz.restart;
+    if (!fn) { quitQuiz(); return; }
+    state.quiz = null;
+    $('quiz-active').classList.add('hidden');
+    $('quiz-result').classList.add('hidden');
+    fn();
+  }
+
   // ============================================================
   // ====              每日挑戰（Daily Challenge）            ====
   // ============================================================
@@ -1550,7 +1561,8 @@
       questions,
       currentIdx: 0,
       correctCount: 0,
-      answers: []
+      answers: [],
+      restart: startDailyChallenge
     };
     showPage('quiz');
     $('quiz-setup').classList.add('hidden');
@@ -1760,7 +1772,9 @@
     });
     $('quiz-next').addEventListener('click', nextQuestion);
     $('quiz-quit').addEventListener('click', quitQuiz);
-    $('quiz-restart').addEventListener('click', quitQuiz);
+    $('quiz-restart').addEventListener('click', restartQuiz);
+    const qb = $('quiz-back');
+    if (qb) qb.addEventListener('click', quitQuiz);
 
     // 複習頁面按鈕
     $('btn-review-due').addEventListener('click', () => startReviewSession('due'));
