@@ -140,24 +140,25 @@
 
     // ---- 每日挑戰 / 排行榜 ----
 
-    // 提交今天的挑戰分數（upsert，同日重交以新分覆蓋）
-    async submitDailyScore(date, score, maxScore) {
+    // 提交今天的「原始」分數（伺服器自動算折扣 + 取 max + 增加 attempts）
+    // 回傳 { final_score, total_attempts, multiplier_pct } 或 throw
+    async submitDailyScore(date, rawScore, maxScore) {
       if (!this.user) throw new Error('未登入');
-      const { error } = await sb.from('daily_challenges').upsert({
-        user_id: this.user.id,
-        date,
-        score,
-        max_score: maxScore,
-        completed_at: new Date().toISOString()
-      }, { onConflict: 'user_id,date' });
+      const { data, error } = await sb.rpc('submit_daily_score', {
+        p_date: date,
+        p_raw_score: rawScore,
+        p_max_score: maxScore
+      });
       if (error) throw error;
+      // data 是陣列 — RPC return table
+      return (data && data[0]) || null;
     },
 
-    // 查自己當天是否已完成
+    // 查自己當天是否已完成（含 attempts）
     async fetchMyDailyScore(date) {
       if (!this.user) return null;
       const { data, error } = await sb.from('daily_challenges')
-        .select('score, max_score, completed_at')
+        .select('score, max_score, attempts, completed_at')
         .eq('user_id', this.user.id)
         .eq('date', date)
         .maybeSingle();

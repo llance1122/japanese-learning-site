@@ -1473,22 +1473,52 @@
       review.appendChild(item);
     });
 
-    // 每日挑戰：寫本機 + 提交雲端
+    // 每日挑戰：寫本機 + 提交雲端（伺服器算折扣 + 取 max）
     if (q.type === 'daily-challenge' && q.dailyDate) {
-      const score = q.correctCount * 10;          // 滿分 100
+      const rawScore = q.correctCount * 10;       // 原始：每題 10 分
       const maxScore = q.questions.length * 10;
-      saveDailyChallengeLocal(q.dailyDate, score, maxScore);
       if (window.AuthState && window.AuthState.user) {
-        window.AuthState.submitDailyScore(q.dailyDate, score, maxScore)
-          .then(() => showToast(`今日挑戰已上傳！${score} / ${maxScore} 分`, 'success'))
+        window.AuthState.submitDailyScore(q.dailyDate, rawScore, maxScore)
+          .then(result => {
+            if (!result) {
+              showToast('上傳成功，但伺服器沒回傳資料', 'info');
+              return;
+            }
+            const discounted = Math.round(rawScore * result.multiplier_pct / 100);
+            saveDailyChallengeLocal(q.dailyDate, result.final_score, maxScore, result.total_attempts);
+            showToast(
+              `第 ${result.total_attempts} 次挑戰：本次 ${rawScore} × ${result.multiplier_pct}% = ${discounted} 分　·　今日最佳 ${result.final_score} / ${maxScore}`,
+              'success', 8000
+            );
+            renderDailyChallengeCard();
+          })
           .catch(err => {
             console.error('submitDailyScore failed', err);
             showToast('分數上傳失敗：' + (err.message || '請稍後再試'), 'error');
           });
       } else {
-        showToast('未登入 — 分數只存在本機，沒進排行榜', 'info', 6000);
+        // 未登入：本機自算折扣
+        const prev = getTodayLocalScore();
+        const newAttempts = (prev?.attempts || 0) + 1;
+        const mult = multiplierForAttempt(newAttempts);
+        const discounted = Math.round(rawScore * mult);
+        const finalScore = Math.max(prev?.score || 0, discounted);
+        saveDailyChallengeLocal(q.dailyDate, finalScore, maxScore, newAttempts);
+        showToast(
+          `未登入：第 ${newAttempts} 次挑戰，本次 ${discounted} 分（×${Math.round(mult * 100)}%）·  最佳 ${finalScore} / ${maxScore}`,
+          'info', 7000
+        );
       }
     }
+  }
+
+  // 第 N 次挑戰的折扣倍率（跟 SQL submit_daily_score 對齊）
+  function multiplierForAttempt(n) {
+    if (n <= 1) return 1.00;
+    if (n === 2) return 0.70;
+    if (n === 3) return 0.50;
+    if (n === 4) return 0.35;
+    return 0.25;
   }
 
   function quitQuiz() {
@@ -1521,10 +1551,10 @@
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
-  function saveDailyChallengeLocal(date, score, maxScore) {
+  function saveDailyChallengeLocal(date, score, maxScore, attempts) {
     try {
       localStorage.setItem(DAILY_LOCAL_KEY, JSON.stringify({
-        date, score, maxScore, completedAt: Date.now()
+        date, score, maxScore, attempts: attempts || 1, completedAt: Date.now()
       }));
     } catch (e) {}
   }
@@ -1582,22 +1612,31 @@
     if (!status || !btn) return;
 
     let myToday = getTodayLocalScore();
-    // 已登入時也問問雲端（防換裝置）
-    if (!myToday && window.AuthState && window.AuthState.user) {
+    // 已登入時也問問雲端（防換裝置 / 多裝置同步）
+    if (window.AuthState && window.AuthState.user) {
       const cloud = await window.AuthState.fetchMyDailyScore(dateStr);
       if (cloud) {
-        myToday = { date: dateStr, score: cloud.score, maxScore: cloud.max_score };
-        saveDailyChallengeLocal(dateStr, cloud.score, cloud.max_score);
+        // 雲端為準，覆蓋本機
+        myToday = {
+          date: dateStr,
+          score: cloud.score,
+          maxScore: cloud.max_score,
+          attempts: cloud.attempts || 1
+        };
+        saveDailyChallengeLocal(dateStr, cloud.score, cloud.max_score, cloud.attempts || 1);
       }
     }
 
     if (myToday) {
       const pct = Math.round((myToday.score / myToday.maxScore) * 100);
-      status.innerHTML = `✅ 今日已完成 · <b>${myToday.score} / ${myToday.maxScore}</b> 分（${pct}%）`;
+      const attempts = myToday.attempts || 1;
+      status.innerHTML =
+        `✅ 今日最佳 <b>${myToday.score} / ${myToday.maxScore}</b> 分（${pct}%）　·　已挑戰 <b>${attempts}</b> 次`;
       status.classList.add('done');
-      btn.textContent = '再挑戰一次（覆蓋分數）';
+      const nextMult = Math.round(multiplierForAttempt(attempts + 1) * 100);
+      btn.textContent = `再挑戰一次（下次得分 ×${nextMult}%）`;
     } else {
-      status.innerHTML = '尚未挑戰　·　完成可上傳到排行榜';
+      status.innerHTML = '尚未挑戰　·　第 1 次拿滿分機會（×100%）';
       status.classList.remove('done');
       btn.textContent = '開始今日挑戰';
     }
@@ -1661,10 +1700,17 @@
     const myId = window.AuthState.user.id;
     tbody.innerHTML = filtered.map((r, i) => {
       const isMe = r.user_id === myId;
-      let scoreVal;
-      if (lbCurrentTab === 'total') scoreVal = r.total_score;
-      else if (lbCurrentTab === 'week') scoreVal = r.week_score;
-      else scoreVal = r.today_score;
+      let scoreVal, extraText;
+      if (lbCurrentTab === 'total') {
+        scoreVal = r.total_score;
+        extraText = `${r.best_score} / ${r.days_played} 天`;
+      } else if (lbCurrentTab === 'week') {
+        scoreVal = r.week_score;
+        extraText = `${r.best_score} / ${r.days_played} 天`;
+      } else {
+        scoreVal = r.today_score;
+        extraText = `${r.today_attempts || 0} 次`;
+      }
       const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
       const name = escapeHtml(r.display_name || '匿名玩家');
       return `
@@ -1672,7 +1718,7 @@
           <td class="lb-rank">${medal}</td>
           <td>${name}${isMe ? ' <span class="lb-me-tag">你</span>' : ''}</td>
           <td class="lb-score"><b>${scoreVal}</b></td>
-          <td class="lb-extra">${r.best_score} / ${r.days_played} 天</td>
+          <td class="lb-extra">${extraText}</td>
           <td class="lb-extra">${r.last_played || '—'}</td>
         </tr>
       `;
@@ -1683,6 +1729,10 @@
     if (header) {
       header.textContent = lbCurrentTab === 'total' ? '總分'
         : lbCurrentTab === 'week' ? '本週分' : '今日分';
+    }
+    const extra1 = $('lb-extra1-header');
+    if (extra1) {
+      extra1.textContent = lbCurrentTab === 'today' ? '今日挑戰次數' : '最佳單日 / 連戰';
     }
   }
 
