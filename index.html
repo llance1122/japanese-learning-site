@@ -320,13 +320,13 @@
         </button>
 
         <h3>分題型練習</h3>
-        <div class="quiz-section-group">
-          <div class="quiz-section-label">五十音</div>
+        <div class="quiz-section-group quiz-section-no-level">
+          <div class="quiz-section-label">五十音 <span class="quiz-section-hint">（不分等級）</span></div>
           <div class="quiz-types">
-            <button class="quiz-type" data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
-            <button class="quiz-type" data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
-            <button class="quiz-type" data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
-            <button class="quiz-type" data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
+            <button class="quiz-type" data-no-level data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
+            <button class="quiz-type" data-no-level data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
+            <button class="quiz-type" data-no-level data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
+            <button class="quiz-type" data-no-level data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
           </div>
         </div>
         <div class="quiz-section-group">
@@ -356,8 +356,9 @@
             <button class="quiz-type" data-type="verb-conjugation">動詞變化練習（ます／ない／た／て…）</button>
           </div>
         </div>
-        <div class="quiz-config">
-          <label>等級：
+        <div class="quiz-config" id="quiz-config">
+          <label class="quiz-config-level">等級
+            <span class="quiz-config-hint">（五十音不使用）</span>：
             <select id="quiz-level">
               <option value="N5" selected>N5</option>
               <option value="N4">N4</option>

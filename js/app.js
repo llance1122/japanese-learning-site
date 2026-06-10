@@ -1819,6 +1819,11 @@
     // 測驗類型
     $$('.quiz-type').forEach(b => {
       b.addEventListener('click', () => startQuiz(b.dataset.type));
+      // 桌面：滑到「不分等級」題型上 → 把全域等級欄位視覺降階
+      if (b.dataset.noLevel != null) {
+        b.addEventListener('mouseenter', () => $('quiz-config')?.classList.add('level-dimmed'));
+        b.addEventListener('mouseleave', () => $('quiz-config')?.classList.remove('level-dimmed'));
+      }
     });
     $('quiz-next').addEventListener('click', nextQuestion);
     $('quiz-quit').addEventListener('click', quitQuiz);
