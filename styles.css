@@ -610,6 +610,25 @@ html[data-theme="dark"] .theme-toggle .thumb {
   opacity: 0.7;
   margin-left: 4px;
 }
+.kana-range-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+}
+.kana-range-label select {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.kana-range-label select:focus { outline: none; border-color: var(--accent); }
 .quiz-config-hint {
   font-weight: 400;
   font-size: 11px;
@@ -762,6 +781,7 @@ html[data-theme="dark"] .theme-toggle .thumb {
   transition: all 0.15s;
   font-family: inherit;
   color: var(--text);
+  cursor: pointer;
 }
 .quiz-option:hover:not(:disabled) {
   border-color: var(--accent);

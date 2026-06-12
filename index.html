@@ -322,6 +322,15 @@
         <h3>分題型練習</h3>
         <div class="quiz-section-group quiz-section-no-level">
           <div class="quiz-section-label">五十音 <span class="quiz-section-hint">（不分等級）</span></div>
+          <label class="kana-range-label">
+            範圍：
+            <select id="kana-range">
+              <option value="all" selected>全部（清音＋濁音＋拗音）</option>
+              <option value="basic">清音（46 字）</option>
+              <option value="dakuten">濁音／半濁音（25 字）</option>
+              <option value="yoon">拗音（33 字）</option>
+            </select>
+          </label>
           <div class="quiz-types">
             <button class="quiz-type" data-no-level data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
             <button class="quiz-type" data-no-level data-type="romaji-to-hira">羅馬拼音 → 平假名</button>

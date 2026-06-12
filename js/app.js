@@ -1139,10 +1139,11 @@
     const lvl = $('quiz-level') ? $('quiz-level').value : 'all';
     let pool;
 
+    const kanaRange = $('kana-range') ? $('kana-range').value : 'all';
     if (type === 'hira-to-romaji' || type === 'romaji-to-hira') {
-      pool = getAllHiragana();
+      pool = getHiraganaByRange(kanaRange);
     } else if (type === 'kata-to-romaji' || type === 'romaji-to-kata') {
-      pool = getAllKatakana();
+      pool = getKatakanaByRange(kanaRange);
     } else if (type === 'vocab-jp-to-cn' || type === 'vocab-cn-to-jp') {
       pool = VOCAB_DATA.filter(v => lvl === 'all' || v.level === lvl);
     } else if (type === 'vocab-listening-jp' || type === 'vocab-listening-cn') {

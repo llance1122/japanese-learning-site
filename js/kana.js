@@ -116,3 +116,17 @@ function getAllKatakana() {
     ...flattenKana('kata-yoon')
   ];
 }
+
+// 依範圍取假名 pool：'all' / 'basic'(清音) / 'dakuten'(濁音+半濁音) / 'yoon'(拗音)
+function getHiraganaByRange(range) {
+  if (range === 'basic')   return flattenKana('hira-basic');
+  if (range === 'dakuten') return flattenKana('hira-dakuten');
+  if (range === 'yoon')    return flattenKana('hira-yoon');
+  return getAllHiragana();
+}
+function getKatakanaByRange(range) {
+  if (range === 'basic')   return flattenKana('kata-basic');
+  if (range === 'dakuten') return flattenKana('kata-dakuten');
+  if (range === 'yoon')    return flattenKana('kata-yoon');
+  return getAllKatakana();
+}
