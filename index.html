@@ -366,8 +366,13 @@
           </div>
         </div>
         <div class="quiz-config" id="quiz-config">
-          <label class="quiz-config-level">等級
-            <span class="quiz-config-hint">（五十音不使用）</span>：
+          <label>答題方式：
+            <select id="quiz-mode">
+              <option value="choice" selected>選擇題（四選一）</option>
+              <option value="input">輸入題（自己打答案）</option>
+            </select>
+          </label>
+          <label class="quiz-config-level">等級：
             <select id="quiz-level">
               <option value="N5" selected>N5</option>
               <option value="N4">N4</option>
@@ -376,6 +381,7 @@
               <option value="N1">N1</option>
               <option value="all">全部（N5–N1）</option>
             </select>
+            <span class="quiz-config-hint">（五十音不使用）</span>
           </label>
           <label>題數：
             <select id="quiz-count">

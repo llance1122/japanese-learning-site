@@ -1187,7 +1187,8 @@
       currentIdx: 0,
       correctCount: 0,
       answers: [],
-      restart: restartFn || null
+      restart: restartFn || null,
+      mode: $('quiz-mode') ? $('quiz-mode').value : 'choice'
     };
     showPage('quiz');
     $('quiz-setup').classList.add('hidden');
@@ -1278,70 +1279,79 @@
   }
 
   function buildQuestion(type, target, pool) {
-    let question, correct, options;
+    let question, correct, options, acceptable;
     if (type === 'hira-to-romaji' || type === 'kata-to-romaji') {
       question = { prompt: '這個假名的羅馬拼音是？', content: target.kana, small: false };
       correct = target.romaji;
+      acceptable = [target.romaji];
       const distractors = randomPick(pool.filter(p => p.romaji !== correct), 3).map(p => p.romaji);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'romaji-to-hira' || type === 'romaji-to-kata') {
       question = { prompt: '這個羅馬拼音對應的假名是？', content: target.romaji, small: true };
       correct = target.kana;
+      acceptable = [target.kana];
       const distractors = randomPick(pool.filter(p => p.kana !== correct), 3).map(p => p.kana);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'vocab-jp-to-cn') {
       question = { prompt: `這個單字的中文意思是？（${target.kana}）`, content: target.jp, small: false };
       correct = target.cn;
+      acceptable = [target.cn];
       const distractors = randomPick(pool.filter(p => p.cn !== correct), 3).map(p => p.cn);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'vocab-cn-to-jp') {
       question = { prompt: '對應的日文是？', content: target.cn, small: true };
       correct = `${target.jp}（${target.kana}）`;
+      // 輸入模式可寫漢字、假名、或組合形（半全形括號都接受）
+      acceptable = [
+        target.jp,
+        target.kana,
+        `${target.jp}（${target.kana}）`,
+        `${target.jp}(${target.kana})`
+      ];
       const distractors = randomPick(pool.filter(p => p.jp !== target.jp), 3)
         .map(p => `${p.jp}（${p.kana}）`);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'vocab-kanji-to-kana') {
-      // JLPT 漢字読み題型：給漢字選正確讀音
       question = { prompt: '請選出正確的讀法（文字・語彙）', content: target.jp, small: false };
       correct = target.kana;
+      acceptable = [target.kana];
       const distractors = randomPick(
         pool.filter(p => p.kana !== correct && /[一-鿿]/.test(p.jp)),
         3
       ).map(p => p.kana);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'vocab-listening-jp') {
-      // 聽音 → 選漢字。content 標示為 audio，由 renderQuizQuestion 處理 TTS
       question = { prompt: '聽音選漢字（按 🔊 重播）', content: target.kana, small: false, isAudio: true };
       correct = target.jp;
+      acceptable = [target.jp, target.kana];  // 輸入時假名也接受
       const distractors = randomPick(pool.filter(p => p.jp !== correct), 3).map(p => p.jp);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'vocab-listening-cn') {
-      // 聽音 → 選中文意思
       question = { prompt: '聽音選意思（按 🔊 重播）', content: target.kana, small: false, isAudio: true };
       correct = target.cn;
+      acceptable = [target.cn];
       const distractors = randomPick(pool.filter(p => p.cn !== correct), 3).map(p => p.cn);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'grammar') {
       question = { prompt: '這個文法的意思是？', content: target.pattern, small: true };
       correct = target.short;
+      acceptable = [target.short];
       const distractors = randomPick(pool.filter(p => p.short !== correct), 3).map(p => p.short);
       options = shuffle([correct, ...distractors]);
     } else if (type === 'verb-conjugation') {
-      // 隨機挑一個變化形
       const forms = window.VerbConj.FORMS;
       const form = forms[Math.floor(Math.random() * forms.length)];
       const correctConj = window.VerbConj.conjugate(target, form.key);
-      if (!correctConj) {
-        // 萬一這個動詞處理不了，fallback 換成日中
-        return buildQuestion('vocab-jp-to-cn', target, pool);
-      }
+      if (!correctConj) return buildQuestion('vocab-jp-to-cn', target, pool);
       question = {
         prompt: `將「${target.jp}（${target.kana}）」變化為 ${form.label}`,
         content: target.cn,
         small: true
       };
       correct = correctConj.kana;
-      // distractors：拿其他變化形當干擾
+      // 輸入時假名 / 漢字寫法都接受
+      acceptable = [correctConj.kana];
+      if (correctConj.jp && correctConj.jp !== correctConj.kana) acceptable.push(correctConj.jp);
       const distrSet = new Set();
       for (const f of forms) {
         if (f.key === form.key) continue;
@@ -1350,10 +1360,19 @@
       }
       const distractors = shuffle([...distrSet]).slice(0, 3);
       options = shuffle([correct, ...distractors]);
-      // 把 form 資訊塞進 question 給 review 用
       question.formLabel = form.label;
     }
-    return { question, correct, options, target, itemKey: getItemKey(type, target), type };
+    return { question, correct, options, acceptable: acceptable || [correct], target, itemKey: getItemKey(type, target), type };
+  }
+
+  // 答案模糊比對：trim、忽略大小寫、忽略全/半形空白
+  function normalizeAnswer(s) {
+    return String(s || '').trim().replace(/[\s　]+/g, '').toLowerCase();
+  }
+  function checkAnswerInput(userInput, q) {
+    const u = normalizeAnswer(userInput);
+    if (!u) return false;
+    return (q.acceptable || [q.correct]).some(a => normalizeAnswer(a) === u);
   }
 
   function renderQuizQuestion() {
@@ -1393,35 +1412,78 @@
 
     const optBox = $('quiz-options');
     optBox.innerHTML = '';
-    cur.options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'quiz-option';
-      btn.textContent = opt;
-      btn.addEventListener('click', () => handleAnswer(opt, btn));
-      optBox.appendChild(btn);
-    });
+
+    if (q.mode === 'input') {
+      // 輸入題：textbox + 提交
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'quiz-input';
+      input.id = 'quiz-input';
+      input.autocomplete = 'off';
+      input.autocapitalize = 'off';
+      input.spellcheck = false;
+      input.placeholder = '在此輸入答案，按 Enter 送出';
+      const submit = document.createElement('button');
+      submit.className = 'quiz-submit';
+      submit.id = 'quiz-submit';
+      submit.textContent = '送出';
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); submitInputAnswer(); }
+      });
+      submit.addEventListener('click', submitInputAnswer);
+      optBox.appendChild(input);
+      optBox.appendChild(submit);
+      setTimeout(() => input.focus(), 50);
+    } else {
+      // 選擇題：4 個按鈕
+      cur.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => handleAnswer(opt, btn));
+        optBox.appendChild(btn);
+      });
+    }
 
     $('quiz-feedback').classList.add('hidden');
     $('quiz-next').classList.add('hidden');
   }
 
+  function submitInputAnswer() {
+    const input = $('quiz-input');
+    if (!input || input.disabled) return;
+    const picked = input.value;
+    handleAnswer(picked, null);
+  }
+
   function handleAnswer(picked, btn) {
     const q = state.quiz;
     const cur = q.questions[q.currentIdx];
-    const isCorrect = picked === cur.correct;
+    // 輸入模式用 acceptable 模糊比對；選擇模式維持嚴格比對
+    const isCorrect = q.mode === 'input'
+      ? checkAnswerInput(picked, cur)
+      : picked === cur.correct;
 
     if (isCorrect) q.correctCount++;
     q.answers.push({ q: cur, picked, isCorrect });
-
-    // 紀錄到 SRS／錯題本／每日統計
     recordAnswer(cur.itemKey, isCorrect);
 
-    // 標記顏色 + 鎖住所有按鈕
-    $$('.quiz-option').forEach(b => {
-      b.disabled = true;
-      if (b.textContent === cur.correct) b.classList.add('correct');
-      else if (b === btn && !isCorrect) b.classList.add('wrong');
-    });
+    if (q.mode === 'input') {
+      const input = $('quiz-input');
+      const submit = $('quiz-submit');
+      if (input) {
+        input.disabled = true;
+        input.classList.add(isCorrect ? 'correct' : 'wrong');
+      }
+      if (submit) submit.disabled = true;
+    } else {
+      // 選擇題：標顏色 + 鎖按鈕
+      $$('.quiz-option').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === cur.correct) b.classList.add('correct');
+        else if (b === btn && !isCorrect) b.classList.add('wrong');
+      });
+    }
 
     const fb = $('quiz-feedback');
     fb.classList.remove('hidden');
@@ -1820,12 +1882,23 @@
     // 測驗類型
     $$('.quiz-type').forEach(b => {
       b.addEventListener('click', () => startQuiz(b.dataset.type));
-      // 桌面：滑到「不分等級」題型上 → 把全域等級欄位視覺降階
       if (b.dataset.noLevel != null) {
         b.addEventListener('mouseenter', () => $('quiz-config')?.classList.add('level-dimmed'));
         b.addEventListener('mouseleave', () => $('quiz-config')?.classList.remove('level-dimmed'));
       }
     });
+
+    // 答題方式：記到 localStorage
+    const modeSel = $('quiz-mode');
+    if (modeSel) {
+      try {
+        const saved = localStorage.getItem('jp-learn-quiz-mode');
+        if (saved === 'input' || saved === 'choice') modeSel.value = saved;
+      } catch (e) {}
+      modeSel.addEventListener('change', () => {
+        try { localStorage.setItem('jp-learn-quiz-mode', modeSel.value); } catch (e) {}
+      });
+    }
     $('quiz-next').addEventListener('click', nextQuestion);
     $('quiz-quit').addEventListener('click', quitQuiz);
     $('quiz-restart').addEventListener('click', restartQuiz);

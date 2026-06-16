@@ -800,6 +800,38 @@ html[data-theme="dark"] .theme-toggle .thumb {
   color: var(--bad);
 }
 
+/* 輸入題模式 */
+.quiz-input {
+  grid-column: 1 / -1;
+  width: 100%;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  padding: 18px 20px;
+  border-radius: 10px;
+  font-size: 22px;
+  font-family: inherit;
+  color: var(--text);
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.quiz-input:focus { outline: none; border-color: var(--accent); }
+.quiz-input.correct { border-color: var(--good); background: var(--good-bg); color: var(--good); }
+.quiz-input.wrong   { border-color: var(--bad);  background: var(--bad-bg);  color: var(--bad); }
+.quiz-input:disabled { cursor: default; }
+.quiz-submit {
+  grid-column: 1 / -1;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quiz-submit:hover:not(:disabled) { background: var(--accent-dark); }
+.quiz-submit:disabled { opacity: 0.6; cursor: default; }
+
 .quiz-feedback {
   padding: 12px 16px;
   border-radius: 8px;

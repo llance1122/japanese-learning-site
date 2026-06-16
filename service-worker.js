@@ -6,7 +6,7 @@
 //  - Supabase API：network only（不能離線改帳號或同步）
 //  - 其他第三方（jsdelivr）：cache-first
 
-const CACHE_VERSION = 'v14';
+const CACHE_VERSION = 'v16';
 const CACHE_NAME = `jp-learn-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
