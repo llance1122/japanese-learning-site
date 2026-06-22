@@ -734,12 +734,48 @@ html[data-theme="dark"] .theme-toggle .thumb {
 .kd-count-input:focus { outline: none; border-color: var(--accent); }
 .kd-best-time {
   background: var(--bg-soft);
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 8px;
   font-size: 14px;
   color: var(--text-soft);
   margin-bottom: 16px;
   text-align: center;
+}
+.kd-best-list-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-soft);
+  text-align: left;
+}
+.kd-best-row {
+  display: grid;
+  grid-template-columns: 64px 110px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  text-align: left;
+}
+.kd-best-row + .kd-best-row { border-top: 1px dashed var(--border); }
+.kd-best-count {
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
+.kd-best-time-val {
+  font-weight: 700;
+  color: var(--accent);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 15px;
+}
+.kd-best-meta {
+  color: var(--text-soft);
+  font-size: 12px;
+  text-align: right;
+}
+@media (max-width: 720px) {
+  .kd-best-row { grid-template-columns: 50px 90px 1fr; gap: 6px; }
+  .kd-best-meta { font-size: 11px; }
 }
 .kd-start-btn {
   width: 100%;

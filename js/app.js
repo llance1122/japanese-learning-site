@@ -2111,10 +2111,33 @@
   function kdUpdateBestDisplay() {
     const el = $('kd-best-time');
     if (!el) return;
-    const best = kdBestFor(kd.script, kd.range, kdCountLabel());
-    el.innerHTML = best
-      ? `🏆 最佳：<b>${kdFormatMs(best.time)}</b>　·　首答 ${best.accuracy}%　·　${best.date}`
-      : '尚無紀錄';
+    // 列出當前 (script, range) 所有題數最佳
+    const all = kdLoadBest();
+    const prefix = kd.script + '-' + kd.range + '-';
+    const matches = Object.keys(all)
+      .filter(k => k.startsWith(prefix))
+      .map(k => ({ count: k.slice(prefix.length), ...all[k] }));
+
+    if (!matches.length) {
+      el.innerHTML = '尚無紀錄';
+    } else {
+      // 排序：數字升冪，'all' 放最後
+      matches.sort((a, b) => {
+        if (a.count === 'all') return 1;
+        if (b.count === 'all') return -1;
+        return parseInt(a.count, 10) - parseInt(b.count, 10);
+      });
+      el.innerHTML = '<div class="kd-best-list-title">🏆 各題數最佳紀錄</div>' +
+        matches.map(m => {
+          const label = m.count === 'all' ? '全部' : (m.count + ' 題');
+          return '<div class="kd-best-row">' +
+            '<span class="kd-best-count">' + label + '</span>' +
+            '<span class="kd-best-time-val">' + kdFormatMs(m.time) + '</span>' +
+            '<span class="kd-best-meta">首答 ' + m.accuracy + '%　·　' + m.date + '</span>' +
+            '</div>';
+        }).join('');
+    }
+
     // 順便更新「最多 N 題」hint
     const hint = $('kd-count-hint');
     const pool = kdPoolFor(kd.script, kd.range);
