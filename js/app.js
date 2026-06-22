@@ -65,7 +65,8 @@
         lastStudyDate: null,
         today: null     // { date, correct, total }
       },
-      upgradeDismissed: {} // { 'N5->N4': true }：被使用者「稍後再說」的升級提示
+      upgradeDismissed: {}, // { 'N5->N4': true }：被使用者「稍後再說」的升級提示
+      kanaDrillBest: {}     // { 'hira-basic-all': { time, accuracy, date }, ... }
     };
   }
   function loadProgress() {
@@ -147,6 +148,18 @@
       local.upgradeDismissed || {},
       cloud.upgradeDismissed || {}
     );
+
+    // kanaDrillBest（每 key 取時間較短者 = 較佳）
+    merged.kanaDrillBest = merged.kanaDrillBest || {};
+    if (cloud.kanaDrillBest) {
+      for (const k of Object.keys(cloud.kanaDrillBest)) {
+        const a = merged.kanaDrillBest[k];
+        const b = cloud.kanaDrillBest[k];
+        if (!a || (b && typeof b.time === 'number' && b.time < (a.time || Infinity))) {
+          merged.kanaDrillBest[k] = b;
+        }
+      }
+    }
 
     // daily
     merged.daily = merged.daily || { streak: 0, lastStudyDate: null, today: null };
@@ -2027,6 +2040,291 @@
     layer.appendChild(p);
   }
 
+  // ============================================================
+  // ====             五十音速練（Kana Drill）                  ====
+  // ============================================================
+  const KD_BEST_LEGACY_KEY = 'jp-learn-kana-drill-best'; // 舊版單獨儲存 key（會被遷移）
+  const kd = {
+    script: 'hira',
+    range: 'basic',
+    count: 'all',          // 'all' | 數字
+    queue: [],
+    current: null,
+    initialCount: 0,
+    firstTryCorrect: 0,
+    wrongSet: null,
+    startTime: 0,
+    timerId: null
+  };
+
+  function kdLoadBest() {
+    return (progress && progress.kanaDrillBest) ? progress.kanaDrillBest : {};
+  }
+  function kdSaveBest(all) {
+    if (!progress) return;
+    progress.kanaDrillBest = all;
+    saveProgress();  // 寫本機 + 推雲端（已登入時）
+  }
+  function kdBestKey(s, r, c) { return s + '-' + r + '-' + (c || 'all'); }
+  function kdBestFor(s, r, c) {
+    const a = kdLoadBest();
+    return a[kdBestKey(s, r, c)] || null;
+  }
+  function kdTrySaveBest(s, r, c, ms, acc) {
+    const all = kdLoadBest();
+    const k = kdBestKey(s, r, c);
+    if (!all[k] || ms < all[k].time) {
+      all[k] = { time: ms, accuracy: acc, date: new Date().toISOString().slice(0, 10) };
+      kdSaveBest(all);
+      return true;
+    }
+    return false;
+  }
+  function kdFormatMs(ms) {
+    const totalCs = Math.floor(ms / 10);
+    const sec = Math.floor(totalCs / 100);
+    const cs = totalCs % 100;
+    return sec + ' 秒 ' + String(cs).padStart(2, '0');
+  }
+  function kdPoolFor(script, range) {
+    return script === 'hira' ? getHiraganaByRange(range) : getKatakanaByRange(range);
+  }
+
+  // 找平假名 ↔ 片假名對應字（用 romaji 比對）
+  function kdFindCounterpart(item, script) {
+    const other = (script === 'hira') ? getAllKatakana() : getAllHiragana();
+    return other.find(k => k.romaji === item.romaji) || null;
+  }
+
+  function kdResolveCount() {
+    // 回傳實際要用的題數（數字）；'all' 或無效值就取 pool 全數
+    const pool = kdPoolFor(kd.script, kd.range);
+    const n = parseInt(kd.count, 10);
+    if (!isFinite(n) || n <= 0) return pool.length;
+    return Math.min(n, pool.length);
+  }
+  function kdCountLabel() {
+    const n = kdResolveCount();
+    const pool = kdPoolFor(kd.script, kd.range);
+    return (n === pool.length) ? 'all' : String(n);
+  }
+  function kdUpdateBestDisplay() {
+    const el = $('kd-best-time');
+    if (!el) return;
+    const best = kdBestFor(kd.script, kd.range, kdCountLabel());
+    el.innerHTML = best
+      ? `🏆 最佳：<b>${kdFormatMs(best.time)}</b>　·　首答 ${best.accuracy}%　·　${best.date}`
+      : '尚無紀錄';
+    // 順便更新「最多 N 題」hint
+    const hint = $('kd-count-hint');
+    const pool = kdPoolFor(kd.script, kd.range);
+    if (hint) hint.textContent = '（最多 ' + pool.length + ' 題）';
+  }
+
+  function kdSwitchMode(mode) {
+    $('kana-view-table').classList.toggle('hidden', mode !== 'table');
+    $('kana-view-drill').classList.toggle('hidden', mode !== 'drill');
+    $$('.kana-mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    if (mode === 'drill') kdUpdateBestDisplay();
+  }
+
+  function kdStart() {
+    const pool = kdPoolFor(kd.script, kd.range);
+    if (!pool.length) return;
+    const n = kdResolveCount();
+    kd.queue = shuffle([...pool]).slice(0, n);
+    kd.initialCount = n;
+    kd.firstTryCorrect = 0;
+    kd.wrongSet = new Set();
+    kd.startTime = Date.now();
+
+    $('kd-setup').classList.add('hidden');
+    $('kd-result').classList.add('hidden');
+    $('kd-active').classList.remove('hidden');
+    $('kd-last-wrong').classList.add('hidden');
+
+    // pill 最佳
+    const best = kdBestFor(kd.script, kd.range, kdCountLabel());
+    $('kd-pill-best').textContent = best ? ('最佳：' + kdFormatMs(best.time)) : '最佳：—';
+
+    if (kd.timerId) clearInterval(kd.timerId);
+    kd.timerId = setInterval(kdTick, 50);
+    kdNextItem();
+  }
+
+  function kdTick() {
+    const el = $('kd-pill-time');
+    if (el) el.textContent = kdFormatMs(Date.now() - kd.startTime);
+  }
+
+  function kdNextItem() {
+    if (kd.queue.length === 0) { kdFinish(); return; }
+    kd.current = kd.queue.shift();
+    $('kd-kana').textContent = kd.current.kana;
+    const input = $('kd-input');
+    input.value = '';
+    input.classList.remove('wrong');
+    // pills + progress bar
+    const remaining = kd.queue.length + 1; // 含當前
+    const done = kd.initialCount - remaining;
+    $('kd-pill-rest').textContent = '剩餘 ' + remaining + ' 題';
+    const pct = Math.max(0, Math.min(100, done / kd.initialCount * 100));
+    $('kd-progress-fill').style.width = pct + '%';
+    setTimeout(() => input.focus(), 30);
+  }
+
+  function kdSubmit() {
+    const input = $('kd-input');
+    if (!input) return;
+    const ans = input.value.trim().toLowerCase();
+    if (!ans) return;
+    const correct = String(kd.current.romaji).toLowerCase();
+    const isCorrect = ans === correct;
+    // 不管對錯，都更新「上一題回饋」卡
+    kdShowLastAnswer(kd.current, ans, isCorrect);
+
+    if (isCorrect) {
+      // 第一次就答對才算進 firstTryCorrect
+      if (!kd.wrongSet.has(kd.current.kana)) kd.firstTryCorrect++;
+      kdNextItem();
+    } else {
+      // 答錯：記下、shake、塞回 queue 最後、自動跳下一題
+      kd.wrongSet.add(kd.current.kana);
+      input.classList.add('wrong');
+      setTimeout(() => input.classList.remove('wrong'), 350);
+      kd.queue.push(kd.current);
+      kdNextItem();
+    }
+  }
+
+  // 統一的「上一題回饋」卡更新（對綠 / 錯紅、wrong-only 細節自動隱藏）
+  function kdShowLastAnswer(item, userAns, isCorrect) {
+    const panel = $('kd-last-wrong');
+    panel.classList.remove('hidden');
+    panel.classList.toggle('is-correct', isCorrect);
+    $('kd-lw-title').textContent = isCorrect ? '✓ 答對了！' : '❌ 答錯了！';
+    $('kd-lw-kana').textContent = item.kana;
+    $('kd-lw-correct').textContent = item.romaji;
+    if (!isCorrect) {
+      $('kd-lw-user').textContent = userAns || '(空)';
+      const cp = kdFindCounterpart(item, kd.script);
+      const cpLabel = kd.script === 'hira' ? '片假名' : '平假名';
+      $('kd-lw-counter-row').firstChild.textContent = '對應' + cpLabel + '：';
+      $('kd-lw-counter').textContent = cp ? cp.kana : '—';
+    }
+  }
+
+  function kdFinish() {
+    if (kd.timerId) { clearInterval(kd.timerId); kd.timerId = null; }
+    const elapsed = Date.now() - kd.startTime;
+    const acc = Math.round((kd.firstTryCorrect / kd.initialCount) * 100);
+    const cKey = kdCountLabel();
+    const isNewRecord = kdTrySaveBest(kd.script, kd.range, cKey, elapsed, acc);
+
+    $('kd-active').classList.add('hidden');
+    $('kd-result').classList.remove('hidden');
+    $('kd-result-time').textContent = kdFormatMs(elapsed);
+    $('kd-result-acc').textContent = acc + '%';
+    const best = kdBestFor(kd.script, kd.range, cKey);
+    $('kd-result-best').textContent = best ? kdFormatMs(best.time) : '--';
+    $('kd-new-record').classList.toggle('hidden', !isNewRecord);
+  }
+
+  function kdAbort() {
+    if (kd.timerId) { clearInterval(kd.timerId); kd.timerId = null; }
+    $('kd-active').classList.add('hidden');
+    $('kd-result').classList.add('hidden');
+    $('kd-setup').classList.remove('hidden');
+    kdUpdateBestDisplay();
+  }
+
+  function initKanaDrill() {
+    // 遷移：舊版本 localStorage 'jp-learn-kana-drill-best' → progress.kanaDrillBest
+    try {
+      const raw = localStorage.getItem(KD_BEST_LEGACY_KEY);
+      if (raw) {
+        const legacy = JSON.parse(raw);
+        progress.kanaDrillBest = progress.kanaDrillBest || {};
+        let migrated = 0;
+        for (const k of Object.keys(legacy)) {
+          const cur = progress.kanaDrillBest[k];
+          if (!cur || (legacy[k] && legacy[k].time < cur.time)) {
+            progress.kanaDrillBest[k] = legacy[k];
+            migrated++;
+          }
+        }
+        localStorage.removeItem(KD_BEST_LEGACY_KEY);
+        if (migrated) saveProgress();
+      }
+    } catch (e) {}
+
+    // 模式 tab：查表 / 速練
+    $$('.kana-mode-tab').forEach(t => {
+      t.addEventListener('click', () => kdSwitchMode(t.dataset.mode));
+    });
+    // 範圍 / 類別 pill
+    $$('[data-kd-script]').forEach(b => {
+      b.addEventListener('click', () => {
+        kd.script = b.dataset.kdScript;
+        $$('[data-kd-script]').forEach(x => x.classList.toggle('active', x === b));
+        kdUpdateBestDisplay();
+      });
+    });
+    $$('[data-kd-range]').forEach(b => {
+      b.addEventListener('click', () => {
+        kd.range = b.dataset.kdRange;
+        $$('[data-kd-range]').forEach(x => x.classList.toggle('active', x === b));
+        kdUpdateBestDisplay();
+      });
+    });
+    // 題數 pill
+    $$('[data-kd-count]').forEach(b => {
+      b.addEventListener('click', () => {
+        kd.count = b.dataset.kdCount;
+        $$('[data-kd-count]').forEach(x => x.classList.toggle('active', x === b));
+        const inp = $('kd-count-input');
+        if (inp) inp.value = '';
+        kdUpdateBestDisplay();
+      });
+    });
+    // 題數自訂 input：取消 pill active、套用數字
+    $('kd-count-input')?.addEventListener('input', e => {
+      const v = parseInt(e.target.value, 10);
+      if (isFinite(v) && v > 0) {
+        kd.count = String(v);
+        $$('[data-kd-count]').forEach(x => x.classList.remove('active'));
+      } else {
+        kd.count = 'all';
+        $$('[data-kd-count]').forEach(x => x.classList.toggle('active', x.dataset.kdCount === 'all'));
+      }
+      kdUpdateBestDisplay();
+    });
+    // start / restart / back / abort
+    $('kd-start-btn')?.addEventListener('click', kdStart);
+    $('kd-restart-btn')?.addEventListener('click', kdStart);
+    $('kd-back-btn')?.addEventListener('click', kdAbort);
+    $('kd-abort-btn')?.addEventListener('click', () => {
+      if (confirm('放棄這一輪？不會被記成最佳紀錄。')) kdAbort();
+    });
+    // Enter 送出
+    $('kd-input')?.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      kdSubmit();
+    });
+    // 🔊 播放當前假名
+    $('kd-audio-btn')?.addEventListener('click', () => {
+      if (kd.current) speak(kd.current.kana, 'ja-JP');
+    });
+    // 測驗頁的「五十音」連結
+    $$('.quiz-kana-link').forEach(b => {
+      b.addEventListener('click', () => {
+        showPage('kana');
+        kdSwitchMode('drill');
+      });
+    });
+  }
+
   // ---- 初始化 ----
   function init() {
     initIntro();
@@ -2034,6 +2332,7 @@
     initTheme();
     loadProgress();
     bindEvents();
+    initKanaDrill();
     initAuth();
     initToast();
     applyRomajiVisibility();

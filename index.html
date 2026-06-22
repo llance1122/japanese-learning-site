@@ -163,17 +163,129 @@
 
     <!-- KANA -->
     <section class="page hidden" id="page-kana">
-      <h2 class="page-title">五十音</h2>
-      <div class="tab-bar" id="kana-tabs">
-        <button class="tab active" data-kana="hira-basic">平假名 清音</button>
-        <button class="tab" data-kana="hira-dakuten">平假名 濁音/半濁音</button>
-        <button class="tab" data-kana="hira-yoon">平假名 拗音</button>
-        <button class="tab" data-kana="kata-basic">片假名 清音</button>
-        <button class="tab" data-kana="kata-dakuten">片假名 濁音/半濁音</button>
-        <button class="tab" data-kana="kata-yoon">片假名 拗音</button>
+      <div class="kana-page-head">
+        <h2 class="page-title">五十音</h2>
+        <div class="kana-mode-tabs" id="kana-mode-tabs">
+          <button class="kana-mode-tab active" data-mode="table">📖 查表</button>
+          <button class="kana-mode-tab" data-mode="drill">⚡ 速練</button>
+        </div>
       </div>
-      <div class="kana-grid" id="kana-grid"></div>
-      <p class="kana-hint">點擊任一字可以聽發音（使用瀏覽器內建語音）</p>
+
+      <!-- 查表模式 -->
+      <div id="kana-view-table">
+        <div class="tab-bar" id="kana-tabs">
+          <button class="tab active" data-kana="hira-basic">平假名 清音</button>
+          <button class="tab" data-kana="hira-dakuten">平假名 濁音/半濁音</button>
+          <button class="tab" data-kana="hira-yoon">平假名 拗音</button>
+          <button class="tab" data-kana="kata-basic">片假名 清音</button>
+          <button class="tab" data-kana="kata-dakuten">片假名 濁音/半濁音</button>
+          <button class="tab" data-kana="kata-yoon">片假名 拗音</button>
+        </div>
+        <div class="kana-grid" id="kana-grid"></div>
+        <p class="kana-hint">點擊任一字可以聽發音（使用瀏覽器內建語音）</p>
+      </div>
+
+      <!-- 速練模式 -->
+      <div id="kana-view-drill" class="hidden">
+        <!-- 設定畫面 -->
+        <div class="kd-setup" id="kd-setup">
+          <p class="kd-desc">輸入羅馬拼音、按 <kbd>Enter</kbd> 送出。答錯會記下並重排到最後再考一次。</p>
+          <div class="kd-options">
+            <div class="kd-option-group">
+              <div class="kd-option-label">類別</div>
+              <div class="kd-pill-group" id="kd-script-group">
+                <button class="kd-pill active" data-kd-script="hira">平假名</button>
+                <button class="kd-pill" data-kd-script="kata">片假名</button>
+              </div>
+            </div>
+            <div class="kd-option-group">
+              <div class="kd-option-label">範圍</div>
+              <div class="kd-pill-group" id="kd-range-group">
+                <button class="kd-pill active" data-kd-range="basic">清音（46）</button>
+                <button class="kd-pill" data-kd-range="dakuten">濁音／半濁音（25）</button>
+                <button class="kd-pill" data-kd-range="yoon">拗音（33）</button>
+                <button class="kd-pill" data-kd-range="all">全部（104）</button>
+              </div>
+            </div>
+            <div class="kd-option-group">
+              <div class="kd-option-label">題數 <span class="kd-count-hint" id="kd-count-hint">（最多 46 題）</span></div>
+              <div class="kd-pill-group" id="kd-count-group">
+                <button class="kd-pill" data-kd-count="10">10 題</button>
+                <button class="kd-pill" data-kd-count="20">20 題</button>
+                <button class="kd-pill" data-kd-count="30">30 題</button>
+                <button class="kd-pill active" data-kd-count="all">全部</button>
+              </div>
+              <div class="kd-count-custom-row">
+                <label class="kd-count-custom-label">或自訂：</label>
+                <input type="number" id="kd-count-input" class="kd-count-input" min="1" max="200" placeholder="自訂題數">
+              </div>
+            </div>
+          </div>
+          <div class="kd-best-time" id="kd-best-time">尚無紀錄</div>
+          <button class="kd-start-btn" id="kd-start-btn">開始練習 →</button>
+        </div>
+
+        <!-- 進行中 -->
+        <div class="kd-active hidden" id="kd-active">
+          <!-- 進度條 -->
+          <div class="kd-progress-bar">
+            <div class="kd-progress-fill" id="kd-progress-fill"></div>
+          </div>
+          <!-- Pills -->
+          <div class="kd-pills">
+            <span class="kd-pill kd-pill-rest" id="kd-pill-rest">剩餘 0 題</span>
+            <span class="kd-pill kd-pill-time" id="kd-pill-time">0 秒 00</span>
+            <span class="kd-pill kd-pill-best" id="kd-pill-best">最佳：—</span>
+          </div>
+
+          <!-- 問題 -->
+          <div class="kd-section-label">問題</div>
+          <div class="kd-kana-wrap">
+            <div class="kd-kana" id="kd-kana">あ</div>
+            <button class="kd-audio-btn" id="kd-audio-btn" type="button" aria-label="播放讀音" title="播放讀音">🔊</button>
+          </div>
+
+          <!-- 回答 -->
+          <div class="kd-section-label">回答</div>
+          <input type="text" class="kd-input" id="kd-input" placeholder="輸入羅馬拼音後按 Enter 送出" autocomplete="off" autocapitalize="off" spellcheck="false">
+
+          <!-- 上一題回饋（對綠 / 錯紅） -->
+          <div class="kd-last-wrong hidden" id="kd-last-wrong">
+            <div class="kd-lw-title" id="kd-lw-title">—</div>
+            <div class="kd-lw-row">上一題目：<b id="kd-lw-kana">—</b></div>
+            <div class="kd-lw-row">正確答案：<b id="kd-lw-correct">—</b></div>
+            <div class="kd-lw-row kd-lw-wrong-only">您的答案：<span class="kd-lw-user" id="kd-lw-user">—</span></div>
+            <div class="kd-lw-row kd-lw-wrong-only" id="kd-lw-counter-row">對應假名：<b id="kd-lw-counter">—</b></div>
+            <div class="kd-lw-notice kd-lw-wrong-only">此題已保留，等一下會再出現</div>
+          </div>
+
+          <button class="kd-abort-btn" id="kd-abort-btn">放棄這一輪</button>
+        </div>
+
+        <!-- 結果 -->
+        <div class="kd-result hidden" id="kd-result">
+          <h3 class="kd-result-title">完成！</h3>
+          <div class="kd-result-grid">
+            <div class="kd-result-item">
+              <div class="kd-result-label">用時</div>
+              <div class="kd-result-value" id="kd-result-time">--</div>
+            </div>
+            <div class="kd-result-item">
+              <div class="kd-result-label">首答正確率</div>
+              <div class="kd-result-value" id="kd-result-acc">--</div>
+            </div>
+            <div class="kd-result-item">
+              <div class="kd-result-label">最佳紀錄</div>
+              <div class="kd-result-value" id="kd-result-best">--</div>
+            </div>
+          </div>
+          <div class="kd-new-record hidden" id="kd-new-record">🏆 破紀錄！</div>
+          <div class="kd-result-actions">
+            <button class="kd-restart-btn" id="kd-restart-btn">🔄 再來一輪</button>
+            <button class="kd-back-btn" id="kd-back-btn">← 換範圍</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- VOCAB -->
@@ -320,24 +432,7 @@
         </button>
 
         <h3>分題型練習</h3>
-        <div class="quiz-section-group quiz-section-no-level">
-          <div class="quiz-section-label">五十音 <span class="quiz-section-hint">（不分等級）</span></div>
-          <label class="kana-range-label">
-            範圍：
-            <select id="kana-range">
-              <option value="all" selected>全部（清音＋濁音＋拗音）</option>
-              <option value="basic">清音（46 字）</option>
-              <option value="dakuten">濁音／半濁音（25 字）</option>
-              <option value="yoon">拗音（33 字）</option>
-            </select>
-          </label>
-          <div class="quiz-types">
-            <button class="quiz-type" data-no-level data-type="hira-to-romaji">平假名 → 羅馬拼音</button>
-            <button class="quiz-type" data-no-level data-type="romaji-to-hira">羅馬拼音 → 平假名</button>
-            <button class="quiz-type" data-no-level data-type="kata-to-romaji">片假名 → 羅馬拼音</button>
-            <button class="quiz-type" data-no-level data-type="romaji-to-kata">羅馬拼音 → 片假名</button>
-          </div>
-        </div>
+        <p class="quiz-kana-tip">五十音練習已升級為「⚡ 速練模式」，請至 <button class="quiz-kana-link" data-page="kana">五十音</button> 頁。</p>
         <div class="quiz-section-group">
           <div class="quiz-section-label">文字・語彙（單字）</div>
           <div class="quiz-types">
